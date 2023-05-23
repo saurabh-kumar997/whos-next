@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Groups = require("../model/GroupModel");
 const User = require("../model/UserModels");
 const ResponseModel = require("../model/responseModel");
@@ -78,10 +79,56 @@ const deleteGroup = async (req, res) => {
   const response = new ResponseModel();
 
   await Groups.findByIdAndDelete(groupId);
+
+  response.message = "Group deleted successfully";
+  response.status = 200;
+  res.status(response.status).json(response);
+};
+
+const createTask = async (req, res) => {
+  const body = req.body;
+  const response = new ResponseModel();
+  const taskReq = {
+    _id: new mongoose.Types.ObjectId(),
+    taskName: body.taskName,
+    createdDate: body.createdDate,
+    toBeDoneBy: body.toBeDoneBy,
+    activity: [],
+  };
+  await Groups.findByIdAndUpdate(body.groupId, {
+    $push: { tasks: taskReq },
+  });
+
+  response.message = "Task created successfully";
+  response.status = 200;
+  response.data = taskReq;
+  res.status(response.status).json(response);
+};
+
+const deleteTask = async (req, res) => {
+  const body = req.body;
+  const response = new ResponseModel();
+
+  const adminOfGroup = await Groups.findById(body.groupId);
+  if (adminOfGroup.admin.equals(body.userId)) {
+    await Groups.findByIdAndUpdate(body.groupId, {
+      $pull: { tasks: { _id: body.taskId } },
+    });
+    response.message = "Task deleted successfully";
+    response.status = 200;
+  } else {
+    response.message = "You dont have access to delete this task";
+    response.status = 403;
+  }
+
+  res.status(response.status).json(response);
 };
 
 module.exports = {
   createGroup,
   addMembers,
   removeMembers,
+  deleteGroup,
+  createTask,
+  deleteTask,
 };

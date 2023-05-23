@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 const User = require("./UserModels");
 
 const activitySchema = mongoose.Schema({
-  lastDoneBy: String,
+  lastDoneBy: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: "User",
+  },
   doneOnDate: mongoose.SchemaTypes.Date,
 });
 
@@ -11,7 +14,10 @@ const taskSchema = mongoose.Schema({
   taskName: {
     type: String,
     required: true,
-    lastDoneBy: String,
+  },
+  toBeDoneBy: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: "User",
   },
   createdDate: mongoose.SchemaTypes.Date,
   activity: [activitySchema],
@@ -42,14 +48,12 @@ GroupSchema.pre("save", async function (next) {
   next();
 });
 
-GroupSchema.post("save", async function (next) {
+GroupSchema.post("save", async function () {
   const group = this;
 
   await User.findByIdAndUpdate(group.admin, {
     $push: { groups: group._id },
   });
-
-  console.log("NEXT", next);
 });
 
 const Groups = mongoose.model("Groups", GroupSchema);
