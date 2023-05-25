@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Groups = require("../model/GroupModel");
 const User = require("../model/UserModels");
 const ResponseModel = require("../model/responseModel");
+const { selectNextMember } = require("../utility/utility");
 
 const createGroup = async (req, res) => {
   const body = req.body;
@@ -65,12 +66,33 @@ const removeMembers = async (req, res) => {
 
   const memberUser = await User.findOne({ email });
 
-  await Groups.findByIdAndUpdate(groupId, {
-    $pull: { members: memberUser._id },
-  });
-  await User.findOneAndUpdate({ email }, { $pull: { groups: groupId } });
+  const groupData = await Groups.findById(groupId);
+  if (!groupData.admin.eqauls(memberUser._id)) {
+    const nextMember = selectNextMember(groupData.members, memberUser._id);
 
-  response.message = `${memberUser.name} removed from the Group`;
+    console.log("nextMember", nextMember);
+
+    const tasks = groupData.tasks.map((task) => {
+      if (task.toBeDoneBy.equals(memberUser._id)) {
+        task.toBeDoneBy = nextMember;
+      }
+      return task;
+    });
+
+    console.log("TASKS", tasks);
+
+    await Groups.findByIdAndUpdate(groupId, {
+      $pull: { members: memberUser._id },
+      $set: { tasks: [...tasks] },
+    });
+
+    await User.findOneAndUpdate({ email }, { $pull: { groups: groupId } });
+
+    response.message = `${memberUser.name} removed from the Group`;
+  } else {
+    response.message = `${memberUser.name} is admin`;
+  }
+
   res.status(response.status).json(response);
 };
 
@@ -78,7 +100,15 @@ const deleteGroup = async (req, res) => {
   const { groupId } = req.params;
   const response = new ResponseModel();
 
-  await Groups.findByIdAndDelete(groupId);
+  const group = await Groups.findOne({ _id: groupId });
+
+  const members = group.members;
+
+  await Promise.all(
+    members.map(async (member) => {
+      await User.findByIdAndUpdate(member, { $pull: { groups: groupId } });
+    })
+  );
 
   response.message = "Group deleted successfully";
   response.status = 200;
@@ -95,13 +125,27 @@ const createTask = async (req, res) => {
     toBeDoneBy: body.toBeDoneBy,
     activity: [],
   };
-  await Groups.findByIdAndUpdate(body.groupId, {
-    $push: { tasks: taskReq },
-  });
+  const group = await Groups.findOne({ _id: body.groupId });
 
-  response.message = "Task created successfully";
-  response.status = 200;
-  response.data = taskReq;
+  const isTaskNameExist = group.tasks.filter(
+    (task) => task.taskName === body.taskName
+  );
+
+  if (!(isTaskNameExist.length > 0)) {
+    await group.updateOne({
+      $push: {
+        tasks: { ...taskReq },
+      },
+    });
+
+    response.message = "Task created successfully";
+    response.status = 200;
+    response.data = taskReq;
+  } else {
+    response.message = "Task already exist";
+    response.status = 409;
+  }
+
   res.status(response.status).json(response);
 };
 
@@ -124,6 +168,32 @@ const deleteTask = async (req, res) => {
   res.status(response.status).json(response);
 };
 
+const markTaskAsDone = async (req, res) => {
+  const { groupId, taskId } = req.params;
+  const response = new ResponseModel();
+
+  const group = await Groups.findById(groupId);
+
+  const tasks = group.tasks.map((task) => {
+    if (task.taskId.equals(taskId)) {
+      const nextMember = selectNextMember(group.members, task.toBeDoneBy);
+      task.toBeDoneBy = nextMember;
+      const activity = {
+        lastDoneBy: task.toBeDoneBy,
+        doneOnDate: Date.now(),
+      };
+      task.activity = [...task.activity, activity];
+    }
+  });
+
+  await group.updateOne({
+    $set: { tasks: [...tasks] },
+  });
+
+  response.message = `Task completed successfully`;
+  res.status(response.status).json(response);
+};
+
 module.exports = {
   createGroup,
   addMembers,
@@ -131,4 +201,5 @@ module.exports = {
   deleteGroup,
   createTask,
   deleteTask,
+  markTaskAsDone,
 };
