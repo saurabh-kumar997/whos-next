@@ -15,7 +15,7 @@ passport.use(
     async (email, password, done) => {
       const response = new ResponseModel();
       try {
-        const isUser = await UserModel.findOne({ email: email });
+        const isUser = await UserModel.findOne({ email });
 
         if (isUser) {
           response.message = "User already exist";
@@ -70,9 +70,9 @@ passport.use(
         resp.message = "Logged in Successfully";
         resp.data = {
           email: user.email,
-          userId: user._id,
+          id: user._id,
         };
-        return done(null, user, resp);
+        return done(null, resp.data, resp);
       } catch (error) {
         resp.status = 500;
         resp.error = error;

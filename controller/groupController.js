@@ -18,7 +18,6 @@ const createGroup = async (req, res) => {
       tasks: [],
     };
 
-    // const getGroupDetail = await User.
     const group = await Groups.create(data);
     response.data = {
       groupId: group._id,
@@ -42,12 +41,8 @@ const addMembers = async (req, res) => {
       await Groups.findByIdAndUpdate(groupId, {
         $push: { members: memberUser._id },
       });
-      await User.findOneAndUpdate({ email }, { $push: { groups: groupId } });
+      await memberUser.updateOne({ $push: { groups: groupId } });
 
-      // response.data = {
-      //   groupId: group._id,
-      //   groupName: group.groupName,
-      // };
       response.message = `${memberUser.name} added to the Group`;
       res.status(response.status).json(response);
     } else {
@@ -90,7 +85,7 @@ const removeMembers = async (req, res) => {
 
     response.message = `${memberUser.name} removed from the Group`;
   } else {
-    response.message = `${memberUser.name} is admin`;
+    response.message = `${memberUser.name} is admin, You cannot remove admin`;
   }
 
   res.status(response.status).json(response);
@@ -99,19 +94,24 @@ const removeMembers = async (req, res) => {
 const deleteGroup = async (req, res) => {
   const { groupId } = req.params;
   const response = new ResponseModel();
-
+  const user = req.user;
   const group = await Groups.findOne({ _id: groupId });
+  if (group.admin.equals(user.id)) {
+    const members = group.members;
 
-  const members = group.members;
+    await Promise.all(
+      members.map(async (member) => {
+        await User.findByIdAndUpdate(member, { $pull: { groups: groupId } });
+      })
+    );
 
-  await Promise.all(
-    members.map(async (member) => {
-      await User.findByIdAndUpdate(member, { $pull: { groups: groupId } });
-    })
-  );
+    response.message = "Group deleted successfully";
+    response.status = 200;
+  } else {
+    response.message = "You dont have access to this action";
+    response.status = 401;
+  }
 
-  response.message = "Group deleted successfully";
-  response.status = 200;
   res.status(response.status).json(response);
 };
 
@@ -153,37 +153,33 @@ const deleteTask = async (req, res) => {
   const body = req.body;
   const response = new ResponseModel();
 
-  const adminOfGroup = await Groups.findById(body.groupId);
-  if (adminOfGroup.admin.equals(body.userId)) {
-    await Groups.findByIdAndUpdate(body.groupId, {
-      $pull: { tasks: { _id: body.taskId } },
-    });
-    response.message = "Task deleted successfully";
-    response.status = 200;
-  } else {
-    response.message = "You dont have access to delete this task";
-    response.status = 403;
-  }
+  await Groups.findByIdAndUpdate(body.groupId, {
+    $pull: { tasks: { _id: body.taskId } },
+  });
+  response.message = "Task deleted successfully";
+  response.status = 200;
 
   res.status(response.status).json(response);
 };
 
 const markTaskAsDone = async (req, res) => {
-  const { groupId, taskId } = req.params;
+  const { groupId, taskId } = req.body;
   const response = new ResponseModel();
+  const user = req.user;
 
   const group = await Groups.findById(groupId);
 
   const tasks = group.tasks.map((task) => {
-    if (task.taskId.equals(taskId)) {
-      const nextMember = selectNextMember(group.members, task.toBeDoneBy);
-      task.toBeDoneBy = nextMember;
+    if (task._id.equals(taskId) && task.toBeDoneBy.equals(user.id)) {
       const activity = {
         lastDoneBy: task.toBeDoneBy,
         doneOnDate: Date.now(),
       };
+      const nextMember = selectNextMember(group.members, task.toBeDoneBy);
+      task.toBeDoneBy = nextMember;
       task.activity = [...task.activity, activity];
     }
+    return task;
   });
 
   await group.updateOne({

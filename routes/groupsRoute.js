@@ -20,6 +20,6 @@ groupsRoute.get("/get-groups/:userId", getGroups);
 groupsRoute.delete("/delete/:groupId", deleteGroup);
 groupsRoute.post("/create-task", createTask);
 groupsRoute.post("/delete-task", deleteTask);
-groupsRoute.post("/mark-task-done/:groupId/:taskId", markTaskAsDone);
+groupsRoute.post("/mark-task-done", markTaskAsDone);
 
 module.exports = groupsRoute;
