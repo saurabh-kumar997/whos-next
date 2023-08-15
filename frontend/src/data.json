@@ -1,0 +1,118 @@
+{
+  "_id": "648c9cd654344fb3b997c2db",
+  "email": "test3@gmail.com",
+  "name": "test3@gmail.com",
+  "groups": [
+    {
+      "_id": "648e8e973d5e0d2b2dbf2d89",
+      "admin": "648c9ccb54344fb3b997c2d5",
+      "groupName": "Test Group 1",
+      "members": [
+        {
+          "_id": "648c9ccb54344fb3b997c2d5",
+          "email": "test1@gmail.com",
+          "name": "test1@gmail.com"
+        },
+        {
+          "_id": "648c9cd254344fb3b997c2d8",
+          "email": "test2@gmail.com",
+          "name": "test2@gmail.com"
+        },
+        {
+          "_id": "648c9cd654344fb3b997c2db",
+          "email": "test3@gmail.com",
+          "name": "test3@gmail.com"
+        }
+      ],
+      "tasks": [
+        {
+          "_id": "648e95c73d5e0d2b2dbf2d97",
+          "taskName": "Task 1",
+          "toBeDoneBy": "648c9ccb54344fb3b997c2d5",
+          "activity": [
+            {
+              "lastDoneBy": "Test 1",
+              "doneOnDate": "Fri Jul 21 2023"
+            },
+            {
+              "lastDoneBy": "string 2",
+              "doneOnDate": "Fri Jul 21 2023"
+            },
+            {
+              "lastDoneBy": "string 3",
+              "doneOnDate": "Fri Jul 21 2023"
+            }
+          ]
+        },
+        {
+          "_id": "648e95d43d5e0d2b2dbf2d9a",
+          "taskName": "Task 2",
+          "toBeDoneBy": "648c9cd654344fb3b997c2db",
+          "activity": []
+        },
+        {
+          "_id": "648e95e13d5e0d2b2dbf2d9d",
+          "taskName": "Task 3",
+          "toBeDoneBy": "648c9cd254344fb3b997c2d8",
+          "activity": []
+        }
+      ],
+      "__v": 0
+    },
+    {
+      "_id": "648e8e973d5e0d2b2dbf2d90",
+      "admin": "648c9ccb54344fb3b997c2d5",
+      "groupName": "Test Group 1",
+      "members": [
+        {
+          "_id": "648c9ccb54344fb3b997c2d5",
+          "email": "test1@gmail.com",
+          "name": "test1@gmail.com"
+        },
+        {
+          "_id": "648c9cd254344fb3b997c2d8",
+          "email": "test2@gmail.com",
+          "name": "test2@gmail.com"
+        },
+        {
+          "_id": "648c9cd654344fb3b997c2db",
+          "email": "test3@gmail.com",
+          "name": "test3@gmail.com"
+        }
+      ],
+      "tasks": [
+        {
+          "_id": "648e95c73d5e0d2b2dbf2d97",
+          "taskName": "Task 5",
+          "toBeDoneBy": "648c9ccb54344fb3b997c2d5",
+          "activity": []
+        },
+        {
+          "_id": "648e95d43d5e0d2b2dbf2d9a",
+          "taskName": "Task 6",
+          "toBeDoneBy": "648c9cd654344fb3b997c2db",
+          "activity": []
+        },
+        {
+          "_id": "648e95e13d5e0d2b2dbf2d9d",
+          "taskName": "Task 7",
+          "toBeDoneBy": "648c9cd254344fb3b997c2d8",
+          "activity": [
+            {
+              "lastDoneBy": "Test 4",
+              "doneOnDate": "Fri Jul 21 2023"
+            },
+            {
+              "lastDoneBy": "string 5",
+              "doneOnDate": "Fri Jul 21 2023"
+            },
+            {
+              "lastDoneBy": "string 6",
+              "doneOnDate": "Fri Jul 21 2023"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

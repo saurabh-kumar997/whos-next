@@ -35,7 +35,7 @@ const signInRoute = async (req, res, next) => {
           return next(response);
         }
 
-        const body = { id: user._id, email: user.email };
+        const body = { id: user.id, email: user.email };
         const token = jwt.sign({ user: body }, "TOP_SECRET", {
           expiresIn: "1h",
         });
@@ -54,44 +54,7 @@ const signInRoute = async (req, res, next) => {
   })(req, res, next);
 };
 
-const secureRoute = async (req, res, next) => {
-  const resp = new ResponseModel();
-  try {
-    const user = req.user;
-    res.json({
-      message: "You made it to the secure route",
-      user: req.user,
-      token: req.get("x-token"),
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-const getGroups = async (req, res) => {
-  const { userId } = req.params;
-
-  const user = await User.findById(userId)
-    .populate({
-      path: "groups",
-      populate: {
-        path: "members",
-        model: "User",
-        select: "_id email name",
-      },
-    })
-    .select("_id email name groups");
-
-  console.log("USER", user);
-  res.json({
-    message: "You made it to the secure route",
-    user,
-  });
-};
-
 module.exports = {
   signInRoute,
   signUpRoute,
-  secureRoute,
-  getGroups,
 };

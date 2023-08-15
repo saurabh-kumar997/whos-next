@@ -7,8 +7,9 @@ const {
   createTask,
   deleteTask,
   markTaskAsDone,
+  getGroupDataById,
+  getGroups,
 } = require("../controller/groupController");
-const { getGroups } = require("../controller/userController");
 
 const groupsRoute = express.Router();
 
@@ -16,10 +17,12 @@ groupsRoute.post("/create-group", createGroup);
 
 groupsRoute.post("/add-members", addMembers);
 groupsRoute.patch("/remove-members", removeMembers);
-groupsRoute.get("/get-groups/:userId", getGroups);
+groupsRoute.get("/get-groups", getGroups);
 groupsRoute.delete("/delete/:groupId", deleteGroup);
 groupsRoute.post("/create-task", createTask);
 groupsRoute.post("/delete-task", deleteTask);
 groupsRoute.post("/mark-task-done", markTaskAsDone);
+groupsRoute.post("/get-groups", markTaskAsDone);
+groupsRoute.get("/get-group-data/:groupId", getGroupDataById);
 
 module.exports = groupsRoute;

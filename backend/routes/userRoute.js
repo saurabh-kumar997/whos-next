@@ -3,6 +3,6 @@ const { secureRoute } = require("../controller/userController");
 
 const secRoute = express.Router();
 
-secRoute.get("/", secureRoute);
+secRoute.get("/secure-route", secureRoute);
 
 module.exports = secRoute;

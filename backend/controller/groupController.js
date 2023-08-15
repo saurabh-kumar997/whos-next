@@ -4,6 +4,26 @@ const User = require("../model/UserModels");
 const ResponseModel = require("../model/responseModel");
 const { selectNextMember } = require("../utility/utility");
 
+const getGroups = async (req, res) => {
+  const resp = new ResponseModel();
+  if (req.user) {
+    const { id } = req.user;
+    const user = await User.findById(id)
+      .populate({
+        path: "groups",
+        select: "_id groupName",
+      })
+      .select("_id email name groups");
+    resp.status = 200;
+    resp.data = user;
+  } else {
+    resp.status = 401;
+    resp.message = "Unauthorized";
+  }
+
+  res.status(resp.status).json(resp);
+};
+
 const createGroup = async (req, res) => {
   const body = req.body;
   const user = req.user;
@@ -12,9 +32,9 @@ const createGroup = async (req, res) => {
   if (user) {
     const { id } = user;
     const data = {
-      admin: id,
+      admin: new mongoose.Types.ObjectId(id),
       groupName: body.groupName,
-      members: [id],
+      members: [new mongoose.Types.ObjectId(id)],
       tasks: [],
     };
 
@@ -86,6 +106,38 @@ const removeMembers = async (req, res) => {
     response.message = `${memberUser.name} removed from the Group`;
   } else {
     response.message = `${memberUser.name} is admin, You cannot remove admin`;
+  }
+
+  res.status(response.status).json(response);
+};
+
+const getGroupDataById = async (req, res) => {
+  const { groupId } = req.params;
+  const response = new ResponseModel();
+
+  const group = await Groups.findOne({ _id: groupId })
+    .populate({
+      path: "members",
+      model: "User",
+      select: "_id email name",
+    })
+    .populate({
+      path: "tasks.toBeDoneBy",
+      model: "User",
+      select: "_id name",
+    })
+    .populate({
+      path: "tasks.activity.lastDoneBy",
+      model: "User",
+      select: "_id name",
+    });
+
+  if (group) {
+    response.message = "Group Data";
+    response.data = group;
+  } else {
+    response.message = "No group data found";
+    response.status = 404;
   }
 
   res.status(response.status).json(response);
@@ -172,6 +224,7 @@ const markTaskAsDone = async (req, res) => {
   const tasks = group.tasks.map((task) => {
     if (task._id.equals(taskId) && task.toBeDoneBy.equals(user.id)) {
       const activity = {
+        _id: new mongoose.Types.ObjectId(),
         lastDoneBy: task.toBeDoneBy,
         doneOnDate: Date.now(),
       };
@@ -191,6 +244,7 @@ const markTaskAsDone = async (req, res) => {
 };
 
 module.exports = {
+  getGroups,
   createGroup,
   addMembers,
   removeMembers,
@@ -198,4 +252,5 @@ module.exports = {
   createTask,
   deleteTask,
   markTaskAsDone,
+  getGroupDataById,
 };

@@ -1,6 +1,6 @@
 const express = require("express");
 const passport = require("passport");
-const { signInRoute, signUpRoute } = require("../controller/userController");
+const { signInRoute, signUpRoute } = require("../controller/authController");
 
 const userRoute = express.Router();
 

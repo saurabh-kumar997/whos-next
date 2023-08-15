@@ -2,9 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const passport = require("passport");
-const userRoute = require("./routes/userRoutes");
-const secRoute = require("./routes/secureRoute");
-const groupsRoute = require("./routes/groupsRoute");
+const authRoutes = require("./routes/authRoutes");
+const secRoutes = require("./routes/userRoute");
+const groupsRoutes = require("./routes/groupsRoute");
+const ResponseModel = require("./model/responseModel");
 
 require("./auth/auth");
 require("dotenv").config();
@@ -16,26 +17,29 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api", userRoute);
+app.use("/api", authRoutes);
 app.use(
   "/api/group",
   passport.authenticate("jwt", { session: false }),
-  groupsRoute
+  groupsRoutes
 );
 app.use(
   "/api/user",
   passport.authenticate("jwt", { session: false }),
-  secRoute
+  secRoutes
 );
 
-// app.get("/", (req, res) => {
-//   res.json({ messgage: "Hello World" });
-// });
+app.use("/error", (req, res) => {
+  throw Error("Error!!");
+});
 
 app.use(function (err, req, res, next) {
-  console.log(err);
-  res.status(err.status || 500);
-  res.json(err);
+  console.error(err);
+  const resp = new ResponseModel();
+  resp.status = err.status || 500;
+  resp.error = "Something went wrong!";
+  res.status(resp.status);
+  res.json(resp);
 });
 
 mongoose

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const User = require("./UserModels");
 
 const activitySchema = mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
   lastDoneBy: {
     type: mongoose.SchemaTypes.ObjectId,
     ref: "User",
