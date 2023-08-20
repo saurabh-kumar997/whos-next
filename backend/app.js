@@ -29,10 +29,6 @@ app.use(
   secRoutes
 );
 
-app.use("/error", (req, res) => {
-  throw Error("Error!!");
-});
-
 app.use(function (err, req, res, next) {
   console.error(err);
   const resp = new ResponseModel();

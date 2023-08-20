@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 const User = require("./UserModels");
+const mongoose = require("mongoose");
 
 const activitySchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
@@ -52,8 +52,10 @@ GroupSchema.pre("save", async function (next) {
 GroupSchema.post("save", async function () {
   const group = this;
 
-  await User.findByIdAndUpdate(group.admin, {
-    $push: { groups: group._id },
+  console.log("GROUP", this);
+
+  await User.findByIdAndUpdate(this.admin, {
+    $push: { groups: this._id },
   });
 });
 

@@ -19,7 +19,6 @@ export const customAccordionSlice = createSlice({
   },
 });
 
-// Action creators are generated for each case reducer function
 export const { onClickPanel } = customAccordionSlice.actions;
 
 export default customAccordionSlice.reducer;

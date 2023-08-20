@@ -46,10 +46,7 @@ const signInRoute = async (req, res, next) => {
         return res.status(200).json(response);
       });
     } catch (error) {
-      response.error = error;
-      response.status = 500;
-      response.message = "Something went wrong";
-      return next(response);
+      return next(error);
     }
   })(req, res, next);
 };
