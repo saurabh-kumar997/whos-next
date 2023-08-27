@@ -12,13 +12,20 @@ import {
   CardContent,
   Link,
   LinearProgress,
+  Alert,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { userService } from "../apiServices/services";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "../store/store";
+import { setAuthUser } from "../store/authStore";
 
-const Login = () => {
-  //   const navigate = useNavigate();
-  //   const auth = useAuth();
+const Login = (): React.ReactElement => {
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   const [passwordValues, setPassword] = useState({
     showPassword: false,
@@ -42,7 +49,7 @@ const Login = () => {
     });
   };
 
-  const onUpdatePassword = (event: SyntheticEvent) => {
+  const onSubmitLogin = async (event: SyntheticEvent) => {
     setLoader(true);
     event.preventDefault();
 
@@ -54,7 +61,16 @@ const Login = () => {
     } else {
       setError(false);
       setErrorMsg("");
-      console.log({ email, password });
+      const body = { email, password };
+      const resp = await userService.signIn(body);
+
+      if (resp?.status === 200) {
+        const token = resp.data ? resp.data.token : "";
+        const user = resp.data ? resp.data.user : null;
+        localStorage.setItem("token", token);
+        dispatch(setAuthUser(user));
+        navigate("/dashboard", { replace: true });
+      }
     }
   };
 
@@ -81,11 +97,11 @@ const Login = () => {
           </Grid>
           <Grid container justifyContent={"center"}>
             <Grid item>
-              {/* {error && <CustomAlert severity={"error"} msg={errorMsg} />} */}
+              {error && <Alert severity={"error"}>{errorMsg}</Alert>}
             </Grid>
           </Grid>
           <CardContent>
-            <form onSubmit={onUpdatePassword}>
+            <form onSubmit={onSubmitLogin}>
               <Grid>
                 <Grid item xs={12} sm={12} md={12}>
                   <TextField
@@ -142,7 +158,7 @@ const Login = () => {
                     <Button
                       fullWidth
                       variant="outlined"
-                      onClick={onUpdatePassword}
+                      onClick={onSubmitLogin}
                     >
                       Login
                     </Button>
@@ -150,15 +166,15 @@ const Login = () => {
                 </Grid>
               </Grid>
             </form>
-            <Grid container justifyContent={"space-between"}>
-              <Grid item>
+            <Grid container justifyContent={"center"}>
+              {/* <Grid item>
                 <Link href="/forgot-password" underline="none">
                   <h4 style={{ color: "red" }}>Forgot Password?</h4>
                 </Link>
-              </Grid>
+              </Grid> */}
               <Grid item>
                 <Link href="/signup" underline="none">
-                  <h4>Register</h4>
+                  <h4>Signup</h4>
                 </Link>
               </Grid>
             </Grid>

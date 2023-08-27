@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import CustomTable from "./Table";
-import { Group, Member } from "../types";
+import { Group, Member } from "../common/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Tooltip from "@mui/material/Tooltip";
 import EditIcon from "@mui/icons-material/Edit";

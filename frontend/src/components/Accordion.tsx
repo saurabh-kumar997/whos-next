@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
-import { Group } from "../types";
+import { Group } from "../common/types";
 import { onClickPanel } from "../store/CustomAccordionSlice";
 import { Button, Grid } from "@mui/material";
 import Task from "./Task";

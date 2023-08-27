@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Card,
   CardContent,
@@ -8,10 +9,12 @@ import {
 } from "@mui/material";
 import React, { SyntheticEvent, useState } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
-import { validateEmail, validateText } from "../helper/validations.js";
+import { validateEmail, validateText } from "../common/common.js";
+import { userService } from "../apiServices/services.js";
+import { useNavigate } from "react-router-dom";
 
-function Signup() {
-  // const navigate = useNavigate();
+function Signup(): React.ReactElement {
+  const navigate = useNavigate();
 
   const [signUpData, setSignUpData] = useState({
     name: "",
@@ -26,44 +29,77 @@ function Signup() {
 
   //onchange function
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(event.target);
+    setError(false);
+    setErrorMsg("");
     setSignUpData({ ...signUpData, [event.target.name]: event.target.value });
   };
 
   const onSignUpSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
     setLoader(true);
+    console.log("SIGNUP called");
+    if (validateFields()) {
+      // signup api
+      const body = {
+        name: signUpData.name,
+        email: signUpData.email,
+        password: signUpData.password,
+      };
+      const resp = await userService.signUp(body);
+      setLoader(false);
+      console.log("RESP", resp);
+      if (resp && resp.status === 200) {
+        navigate("/signin", { replace: true });
+      } else if (resp && resp.status === 400) {
+        setError(true);
+        setErrorMsg(resp.message);
+      } else {
+        setError(true);
+        setErrorMsg(
+          "Oops! Something went wrong, Please try again after sometime"
+        );
+      }
+    } else {
+      setLoader(false);
+    }
   };
 
   const validateFields = () => {
     debugger;
     let { name, email, retypePassword, password } = signUpData;
+    let isValid = false;
     setError(false);
-    if (name || email || retypePassword || password) {
+    if (
+      name === "" ||
+      email === "" ||
+      retypePassword === "" ||
+      password === ""
+    ) {
       setError(true);
       setErrorMsg("Please provide values for required fields!");
-      return false;
+      isValid = false;
     } else if (password !== retypePassword) {
       setError(true);
       setErrorMsg("Password doesn't match");
-      return false;
+      isValid = false;
     } else {
       //validate
       if (!validateEmail(email)) {
         setError(true);
         setErrorMsg("Please provide valid email");
-        return false;
+        isValid = false;
       }
       if (!validateText(name)) {
         setError(true);
         setErrorMsg("Please provide valid name");
-        return false;
+        isValid = false;
       }
 
       setError(false);
       setErrorMsg("");
-      return true;
+      isValid = true;
     }
+    return isValid;
   };
 
   return (
@@ -90,7 +126,7 @@ function Signup() {
           <CardContent>
             <Grid container justifyContent={"center"}>
               <Grid item>
-                {/* {error && <CustomAlert severity={"error"} msg={errorMsg} />} */}
+                {error && <Alert severity={"error"}>{errorMsg}</Alert>}
               </Grid>
             </Grid>
             <form onSubmit={onSignUpSubmit}>
@@ -99,7 +135,6 @@ function Signup() {
                   <Grid container>
                     <Grid item xs={12} sm={12} md={12}>
                       <TextField
-                        id="outlined-basic"
                         label="Name"
                         variant="outlined"
                         fullWidth
@@ -108,6 +143,7 @@ function Signup() {
                         onChange={onInputChange}
                         name="name"
                         error={error && !Boolean(signUpData.name)}
+                        disabled={loader}
                         helperText={
                           error &&
                           !validateText(signUpData.name) &&
@@ -117,7 +153,6 @@ function Signup() {
                     </Grid>
                     <Grid item xs={12} sm={12} md={12}>
                       <TextField
-                        id="outlined-basic"
                         label="Email"
                         variant="outlined"
                         fullWidth
@@ -126,11 +161,11 @@ function Signup() {
                         onChange={onInputChange}
                         name="email"
                         error={error && !Boolean(signUpData.email)}
+                        disabled={loader}
                       />
                     </Grid>
                     <Grid item xs={12} sm={12} md={12}>
                       <TextField
-                        id="outlined-basic"
                         label="Password"
                         variant="outlined"
                         fullWidth
@@ -140,11 +175,11 @@ function Signup() {
                         name="password"
                         error={error && !Boolean(signUpData.password)}
                         type="password"
+                        disabled={loader}
                       />
                     </Grid>
                     <Grid item xs={12} sm={12} md={12}>
                       <TextField
-                        id="outlined-basic"
                         label="Retype Password"
                         variant="outlined"
                         fullWidth
@@ -154,6 +189,7 @@ function Signup() {
                         name="retypePassword"
                         type="password"
                         error={error && !Boolean(signUpData.retypePassword)}
+                        disabled={loader}
                       />
                     </Grid>
                   </Grid>
@@ -163,6 +199,7 @@ function Signup() {
                         fullWidth
                         variant="outlined"
                         onClick={onSignUpSubmit}
+                        disabled={loader}
                       >
                         Sign Up
                       </Button>

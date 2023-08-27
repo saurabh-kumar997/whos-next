@@ -21,7 +21,9 @@ function CustomTable(props: CustomTableProps) {
           <TableHead>
             <TableRow>
               {columns.map((column) => (
-                <TableCell align="center">{column}</TableCell>
+                <TableCell align="center" key={column}>
+                  {column}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>

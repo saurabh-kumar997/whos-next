@@ -2,7 +2,7 @@ import { useState } from "react";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import { IconButton, Stack, Tooltip } from "@mui/material";
-import { Activity, Group } from "../types";
+import { Activity, Group } from "../common/types";
 import CustomActivity from "./Activity";
 import CustomTable from "./Table";
 import DeleteIcon from "@mui/icons-material/Delete";

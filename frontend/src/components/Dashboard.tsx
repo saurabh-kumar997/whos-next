@@ -4,7 +4,7 @@ import { Button, Grid } from "@mui/material";
 import { useState } from "react";
 import CustomeDialog from "./Dialog";
 import GroupDetail from "./GroupDetail";
-import { Group } from "../types";
+import { Group } from "../common/types";
 
 function Dashboard() {
   const [group, setGroup] = useState<Group | null>(null);
