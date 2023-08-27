@@ -1,3 +1,4 @@
+const express = require("express");
 const passport = require("passport");
 const localStrategy = require("passport-local").Strategy;
 const JWTstrategy = require("passport-jwt").Strategy;
@@ -11,10 +12,12 @@ passport.use(
     {
       usernameField: "email",
       passwordField: "password",
+      passReqToCallback: true,
     },
-    async (email, password, done) => {
+    async (req, email, password, done) => {
       const response = new ResponseModel();
       try {
+        const body = req.body;
         const isUser = await UserModel.findOne({ email });
 
         if (isUser) {
@@ -22,7 +25,11 @@ passport.use(
           response.status = 400;
           return done(null, response);
         }
-        const user = await UserModel.create({ email, password });
+        const user = await UserModel.create({
+          name: body.name,
+          email,
+          password,
+        });
         response.data = {
           name: user.name,
           email: user.email,
@@ -70,7 +77,8 @@ passport.use(
         resp.message = "Logged in Successfully";
         resp.data = {
           email: user.email,
-          id: user._id,
+          _id: user._id,
+          name: user.name,
         };
         return done(null, resp.data, resp);
       } catch (error) {

@@ -24,7 +24,7 @@ UserSchema.pre("save", async function (next) {
   const hash = await bcrypt.hash(this.password, 10);
 
   this._id = new mongoose.Types.ObjectId();
-  this.name = user.email;
+  this.name = user.name;
   this.password = hash;
   this.date = new Date().toISOString();
   next();

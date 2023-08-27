@@ -6,16 +6,22 @@ const authRoutes = require("./routes/authRoutes");
 const secRoutes = require("./routes/userRoute");
 const groupsRoutes = require("./routes/groupsRoute");
 const ResponseModel = require("./model/responseModel");
+const cors = require("cors");
 
 require("./auth/auth");
 require("dotenv").config();
 
 const PORT = process.env.PORT;
 
+const corsOption = {
+  origin: "*",
+  optionsSuccessStatus: 200,
+};
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors(corsOption));
 
 app.use("/api", authRoutes);
 app.use(

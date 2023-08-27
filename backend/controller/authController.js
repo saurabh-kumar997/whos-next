@@ -40,7 +40,7 @@ const signInRoute = async (req, res, next) => {
           expiresIn: "1h",
         });
 
-        response.data = { token };
+        response.data = { user, token };
         response.status = 200;
         response.message = "Signin Success";
         return res.status(200).json(response);
