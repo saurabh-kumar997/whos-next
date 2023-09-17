@@ -60,7 +60,7 @@ passport.use(
         const user = await UserModel.findOne({ email });
 
         if (!user) {
-          resp.message = "User not found";
+          resp.message = "User not found! No user found with this email";
           resp.status = 404;
           return done(null, false, resp);
         }
@@ -97,8 +97,9 @@ passport.use(
       jwtFromRequest: ExtractJWT.fromHeader("x-token"),
     },
     async (token, done) => {
+      console.log("TOKEN", token);
       try {
-        return done(null, token.user);
+        return done(null, token.user, null);
       } catch (error) {
         console.log("ERROR", error);
         done(error);

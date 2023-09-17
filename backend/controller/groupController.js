@@ -7,21 +7,15 @@ const { selectNextMember } = require("../utility/utility");
 const getGroups = async (req, res, next) => {
   try {
     const resp = new ResponseModel();
-    if (req.user) {
-      const { id } = req.user;
-      const user = await User.findById(id)
-        .populate({
-          path: "groups",
-          select: "_id groupName",
-        })
-        .select("_id email name groups");
-      resp.status = 200;
-      resp.data = user || null;
-    } else {
-      resp.status = 401;
-      resp.message = "Unauthorized";
-    }
-
+    const { id } = req.user;
+    const user = await User.findById(id)
+      .populate({
+        path: "groups",
+        select: "_id groupName",
+      })
+      .select("groups");
+    resp.status = 200;
+    resp.data = user || null;
     res.status(resp.status).json(resp);
   } catch (err) {
     next(err);

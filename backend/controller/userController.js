@@ -6,13 +6,14 @@ const { selectNextMember } = require("../utility/utility");
 const secureRoute = async (req, res, next) => {
   const resp = new ResponseModel();
   try {
-    res.json({
-      message: "You made it to the secure route",
-      user: req.user,
-      token: req.get("x-token"),
-    });
+    throw new Error("ERROR OCCURED");
+    // res.json({
+    //   message: "You made it to the secure route",
+    //   user: req.user,
+    //   token: req.get("x-token"),
+    // });
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     next(err);
   }
 };

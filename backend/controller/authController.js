@@ -17,25 +17,23 @@ const signInRoute = async (req, res, next) => {
         const error = new Error("An error occurred.");
         response.error = error;
         response.status = 500;
-        response.message = "Something went wrongssss";
+        response.message = "Something went wrong!";
         return next(response);
       }
 
       if (!user) {
-        response.status = 400;
-        response.message = "Account not found,please signup before signin";
-        return next(response);
+        return res.status(response.status).json(info);
       }
 
       req.login(user, { session: false }, async (error) => {
         if (error) {
           response.error = error;
           response.status = 500;
-          response.message = "Something went wrong";
-          return next(response);
+          response.message = "Something went wrong!";
+          return res.status(response.status).json(response);
         }
 
-        const body = { id: user.id, email: user.email };
+        const body = { id: user._id, email: user.email };
         const token = jwt.sign({ user: body }, "TOP_SECRET", {
           expiresIn: "1h",
         });
@@ -46,7 +44,7 @@ const signInRoute = async (req, res, next) => {
         return res.status(200).json(response);
       });
     } catch (error) {
-      return next(error);
+      next(error);
     }
   })(req, res, next);
 };

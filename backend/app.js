@@ -1,11 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const passport = require("passport");
 const authRoutes = require("./routes/authRoutes");
 const secRoutes = require("./routes/userRoute");
 const groupsRoutes = require("./routes/groupsRoute");
-const ResponseModel = require("./model/responseModel");
+const {
+  authenticateMiddleware,
+  errorHandlerMiddleware,
+} = require("./middleware/middleware");
 const cors = require("cors");
 
 require("./auth/auth");
@@ -24,25 +26,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(corsOption));
 
 app.use("/api", authRoutes);
-app.use(
-  "/api/group",
-  passport.authenticate("jwt", { session: false }),
-  groupsRoutes
-);
-app.use(
-  "/api/user",
-  passport.authenticate("jwt", { session: false }),
-  secRoutes
-);
 
-app.use(function (err, req, res, next) {
-  console.error(err);
-  const resp = new ResponseModel();
-  resp.status = err.status || 500;
-  resp.error = "Something went wrong!";
-  res.status(resp.status);
-  res.json(resp);
-});
+app.use("/api/group", authenticateMiddleware, groupsRoutes);
+app.use("/api/user", authenticateMiddleware, secRoutes);
+
+app.use(errorHandlerMiddleware);
 
 mongoose
   .connect(
