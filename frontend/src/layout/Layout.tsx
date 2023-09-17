@@ -2,17 +2,18 @@ import { useState } from "react";
 import { AppBar, Grid } from "@mui/material";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import { Outlet } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Avatar from "../components/Avatar";
 import CustomeDialog from "../components/Dialog";
 import MemberDetail from "../components/MyAccount";
+import Dashboard from "../components/Dashboard";
 
 export default function MainLayout() {
   const [memberDataFlag, setMemberDataFlag] = useState<boolean>(false);
   const handleViewMemberData = () => {
     setMemberDataFlag((state) => !state);
   };
+
   return (
     <Box sx={{ display: "flex", margin: "5em" }}>
       <AppBar position="fixed">
@@ -31,7 +32,7 @@ export default function MainLayout() {
       </AppBar>
       <Grid container>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          <Outlet />
+          <Dashboard />
         </Grid>
       </Grid>
       <CustomeDialog

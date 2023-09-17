@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import customAccordionReducer from "./CustomAccordionSlice";
-import userAuthSlice from "./authStore";
+import userAuthReducer from "./authStore";
 
 export const store = configureStore({
   reducer: {
     accordion: customAccordionReducer,
-    userAuth: userAuthSlice,
+    userAuth: userAuthReducer,
   },
 });
 

@@ -3,19 +3,32 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import AccountCircleSharpIcon from "@mui/icons-material/AccountCircleSharp";
 import { IconButton } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store/store";
+import { logout } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 
 interface IAvatarProps {
   handleViewMemberData: () => void;
 }
 export default function Avatar(props: IAvatarProps) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { handleViewMemberData } = props;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/signin", { replace: true });
   };
 
   return (
@@ -41,7 +54,7 @@ export default function Avatar(props: IAvatarProps) {
         }}
       >
         <MenuItem onClick={handleViewMemberData}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
+        <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
     </div>
   );
