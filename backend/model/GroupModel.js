@@ -59,5 +59,24 @@ GroupSchema.post("save", async function () {
   });
 });
 
+GroupSchema.statics.getGroupData = async function (groupId) {
+  return await this.findById(groupId)
+    .populate({
+      path: "members",
+      model: "User",
+      select: "_id email name",
+    })
+    .populate({
+      path: "tasks.toBeDoneBy",
+      model: "User",
+      select: "_id name",
+    })
+    .populate({
+      path: "tasks.activity.lastDoneBy",
+      model: "User",
+      select: "_id name",
+    });
+};
+
 const Groups = mongoose.model("Groups", GroupSchema);
 module.exports = Groups;

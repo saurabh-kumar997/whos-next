@@ -1,11 +1,15 @@
-const User = require("../model/UserModels");
+const UserToken = require("../model/UserTokenModel");
 const ResponseModel = require("../model/responseModel");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
-const signUpRoute = (req, res) => {
-  const response = req.user;
-  return res.status(response.status).json(req.user);
+const signUpRoute = (req, res, next) => {
+  try {
+    const response = req.user;
+    return res.status(response?.status).json(response);
+  } catch (error) {
+    return next(error);
+  }
 };
 
 const signInRoute = async (req, res, next) => {
@@ -22,7 +26,7 @@ const signInRoute = async (req, res, next) => {
       }
 
       if (!user) {
-        return res.status(response.status).json(info);
+        return res.status(info?.status).json(info);
       }
 
       req.login(user, { session: false }, async (error) => {
@@ -35,13 +39,21 @@ const signInRoute = async (req, res, next) => {
 
         const body = { id: user._id, email: user.email };
         const token = jwt.sign({ user: body }, "TOP_SECRET", {
+          expiresIn: "10m",
+        });
+
+        const refreshToken = jwt.sign({ user: body }, "REFRESH_TOP_SECRET", {
           expiresIn: "1h",
         });
 
-        response.data = { user, token };
+        const userToken = await UserToken.findOne({ userId: user._id });
+        if (userToken) await userToken.deleteOne();
+
+        await new UserToken({ userId: user._id, token: refreshToken }).save();
+        response.data = { user, token, refreshToken };
         response.status = 200;
         response.message = "Signin Success";
-        return res.status(200).json(response);
+        return res.status(response.status).json(response);
       });
     } catch (error) {
       next(error);

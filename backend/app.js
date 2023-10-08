@@ -9,6 +9,7 @@ const {
   errorHandlerMiddleware,
 } = require("./middleware/middleware");
 const cors = require("cors");
+const refreshRoute = require("./routes/refreshTokenRoutes");
 
 require("./auth/auth");
 require("dotenv").config();
@@ -26,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(corsOption));
 
 app.use("/api", authRoutes);
-
+app.use("/api", refreshRoute);
 app.use("/api/group", authenticateMiddleware, groupsRoutes);
 app.use("/api/user", authenticateMiddleware, secRoutes);
 

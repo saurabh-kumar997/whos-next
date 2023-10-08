@@ -14,15 +14,27 @@ const getGroups = async (req, res, next) => {
         select: "_id groupName",
       })
       .select("groups");
+
+    let groupData = null;
+    if (user?.groups?.length > 0) {
+      groupData = await Promise.all(
+        user.groups.map(async (group) => await Groups.getGroupData(group._id))
+      );
+
+      // console.log("userPromises", userPromises);
+      // const groups = userPromises.map((prom) => Promise.resolve(prom));
+      // resp.data["groups"] = groups;
+      // groupData = groups;
+    }
     resp.status = 200;
-    resp.data = user || null;
+    resp.data = groupData || null;
     res.status(resp.status).json(resp);
   } catch (err) {
     next(err);
   }
 };
 
-const createGroup = async (req, res) => {
+const createGroup = async (req, res, next) => {
   try {
     const body = req.body;
     const user = req.user;
@@ -38,12 +50,29 @@ const createGroup = async (req, res) => {
       };
 
       const group = await Groups.create(data);
-      response.data = {
-        groupId: group._id,
-        groupName: group.groupName,
-      };
+      response.data = await Groups.getGroupData(group._id);
       res.status(response.status).json(response);
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateGroup = async (req, res, next) => {
+  try {
+    const { groupId } = req.params;
+    const body = req.body;
+    const response = new ResponseModel();
+
+    const group = await Groups.findById(groupId);
+    if (group) {
+      await group.updateOne({ groupName: body.groupName });
+      response.data = await Groups.getGroupData(groupId);
+      return res.status(response.status).json(response);
+    }
+    response.status = 400;
+    response.message = "Not able update Group name";
+    return res.status(response.status).json(response);
   } catch (err) {
     next(err);
   }
@@ -58,21 +87,46 @@ const addMembers = async (req, res, next) => {
     if (user) {
       const { email, groupId } = body;
 
-      const memberUser = await User.findOne({ email });
+      const memberUser = await User.findOne({ email })?.select(
+        "_id name email"
+      );
 
-      if (memberUser) {
-        await Groups.findByIdAndUpdate(groupId, {
+      if (!memberUser) {
+        response.status = 400;
+        response.message = `The user with the ${email} is not found`;
+        return res.status(response.status).json(response);
+      }
+
+      const group = await Groups.findOne({ _id: groupId });
+
+      if (!group) {
+        response.status = 400;
+        response.message = `Cannot find the group`;
+        return res.status(response.status).json(response);
+      }
+
+      const isMemberPresent = group.members.filter((member) =>
+        member.equals(memberUser._id)
+      );
+
+      if (isMemberPresent.length > 0) {
+        response.status = 400;
+        response.message = `User already added in the group`;
+        return res.status(response.status).json(response);
+      }
+      if (group?.admin?.equals(user?.id)) {
+        await group.updateOne({
           $push: { members: memberUser._id },
         });
         await memberUser.updateOne({ $push: { groups: groupId } });
 
+        response.data = await Groups.getGroupData(groupId);
         response.message = `${memberUser.name} added to the Group`;
-        res.status(response.status).json(response);
       } else {
-        response.status = 404;
-        response.message = `The user ${email} doesn't exist`;
-        res.status(response.status).json(response);
+        response.status = 400;
+        response.message = `You do not have authority to perform this action`;
       }
+      return res.status(response.status).json(response);
     }
   } catch (err) {
     next(err);
@@ -82,17 +136,39 @@ const addMembers = async (req, res, next) => {
 const removeMembers = async (req, res, next) => {
   try {
     const body = req.body;
+    const user = req.user;
     const response = new ResponseModel();
 
     const { email, groupId } = body;
 
     const memberUser = await User.findOne({ email });
 
+    if (!memberUser) {
+      response.status = 400;
+      response.message = `The user doesn't exist`;
+      return res.status(response.status).json(response);
+    }
     const groupData = await Groups.findById(groupId);
-    if (!groupData?.admin?.eqauls(memberUser._id)) {
-      const nextMember = selectNextMember(groupData.members, memberUser._id);
+    if (!groupData) {
+      response.status = 400;
+      response.message = `The group doesn't exist`;
+      return res.status(response.status).json(response);
+    }
 
-      console.log("nextMember", nextMember);
+    console.log("groupData.members", groupData.members);
+    console.log("memberUser", memberUser);
+    const isMemberPresent = groupData.members.filter((member) =>
+      member.equals(memberUser._id)
+    );
+
+    if (isMemberPresent.length === 0) {
+      response.status = 400;
+      response.message = `The user is not a member of the group`;
+      return res.status(response.status).json(response);
+    }
+
+    if (groupData.admin.equals(user.id)) {
+      const nextMember = selectNextMember(groupData.members, memberUser._id);
 
       const tasks = groupData.tasks.map((task) => {
         if (task.toBeDoneBy.equals(memberUser._id)) {
@@ -101,8 +177,6 @@ const removeMembers = async (req, res, next) => {
         return task;
       });
 
-      console.log("TASKS", tasks);
-
       await Groups.findByIdAndUpdate(groupId, {
         $pull: { members: memberUser._id },
         $set: { tasks: [...tasks] },
@@ -110,12 +184,14 @@ const removeMembers = async (req, res, next) => {
 
       await User.findOneAndUpdate({ email }, { $pull: { groups: groupId } });
 
+      response.data = await Groups.getGroupData(groupId);
       response.message = `${memberUser.name} removed from the Group`;
     } else {
+      response.status = 400;
       response.message = `${memberUser.name} is admin, You cannot remove admin`;
     }
 
-    res.status(response.status).json(response);
+    return res.status(response.status).json(response);
   } catch (err) {
     next(err);
   }
@@ -172,6 +248,7 @@ const deleteGroup = async (req, res, next) => {
         })
       );
 
+      response.data = groupId;
       response.message = "Group deleted successfully";
       response.status = 200;
     } else {
@@ -192,7 +269,7 @@ const createTask = async (req, res, next) => {
     const taskReq = {
       _id: new mongoose.Types.ObjectId(),
       taskName: body.taskName,
-      createdDate: body.createdDate,
+      createdDate: new Date().toUTCString(),
       toBeDoneBy: body.toBeDoneBy,
       activity: [],
     };
@@ -211,7 +288,7 @@ const createTask = async (req, res, next) => {
 
       response.message = "Task created successfully";
       response.status = 200;
-      response.data = taskReq;
+      response.data = await Groups.getGroupData(body.groupId);
     } else {
       response.message = "Task already exist";
       response.status = 409;
@@ -231,6 +308,7 @@ const deleteTask = async (req, res, next) => {
     await Groups.findByIdAndUpdate(body.groupId, {
       $pull: { tasks: { _id: body.taskId } },
     });
+    response.data = await Groups.getGroupData(body.groupId);
     response.message = "Task deleted successfully";
     response.status = 200;
 
@@ -246,14 +324,16 @@ const markTaskAsDone = async (req, res, next) => {
     const response = new ResponseModel();
     const user = req.user;
 
-    const group = await Groups.findById(groupId);
+    const group = await Groups.findById(groupId).select(
+      "_id members tasks admin groupName"
+    );
 
     const tasks = group?.tasks.map((task) => {
       if (task._id.equals(taskId) && task.toBeDoneBy.equals(user.id)) {
         const activity = {
           _id: new mongoose.Types.ObjectId(),
           lastDoneBy: task.toBeDoneBy,
-          doneOnDate: Date.now(),
+          doneOnDate: new Date().toUTCString(),
         };
         const nextMember = selectNextMember(group.members, task.toBeDoneBy);
         task.toBeDoneBy = nextMember;
@@ -266,6 +346,7 @@ const markTaskAsDone = async (req, res, next) => {
       $set: { tasks: [...tasks] },
     });
 
+    response.data = await Groups.getGroupData(groupId);
     response.message = `Task completed successfully`;
     res.status(response.status).json(response);
   } catch (err) {
@@ -283,4 +364,5 @@ module.exports = {
   deleteTask,
   markTaskAsDone,
   getGroupDataById,
+  updateGroup,
 };

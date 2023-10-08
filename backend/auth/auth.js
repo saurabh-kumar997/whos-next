@@ -1,4 +1,3 @@
-const express = require("express");
 const passport = require("passport");
 const localStrategy = require("passport-local").Strategy;
 const JWTstrategy = require("passport-jwt").Strategy;
@@ -13,6 +12,7 @@ passport.use(
       usernameField: "email",
       passwordField: "password",
       passReqToCallback: true,
+      session: false,
     },
     async (req, email, password, done) => {
       const response = new ResponseModel();
@@ -35,13 +35,12 @@ passport.use(
           email: user.email,
           userId: user._id,
         };
-        response.status = 200;
         return done(null, response);
       } catch (error) {
-        response.status = 400;
+        response.status = 500;
         response.message = "Something went wrong";
         response.error = error;
-        done(response);
+        return done(response);
       }
     }
   )

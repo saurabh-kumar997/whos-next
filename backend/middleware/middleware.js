@@ -4,7 +4,7 @@ const ResponseModel = require("../model/responseModel");
 function errorHandlerMiddleware(err, req, res, next) {
   const resp = new ResponseModel();
   resp.status = err.status || 500;
-  resp.error = "Something went wrong!";
+  resp.error = err?.message || "Something went wrong";
   return res.status(resp.status).json(resp);
 }
 
