@@ -16,19 +16,87 @@ export default class AxiosWrapper implements IApiClient {
   protected createHeaders = () => {
     const headers = new AxiosHeaders();
     const token: string | null = localStorage.getItem("token");
+
     headers["Content-Type"] = "application/json";
     headers["Accept"] = "application/json";
-    token && (headers["x-token"] = token);
     return headers;
   };
 
   protected createAxiosClient(): AxiosInstance {
-    return Axios.create({
+    const instance = Axios.create({
       baseURL: "http://localhost:8000/api",
       responseType: "json",
       headers: this.createHeaders(),
       timeout: 10 * 1000,
     });
+
+    console.log("INSTA", instance);
+    instance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (
+          config.url === "/refresh-token" &&
+          config.method?.toLocaleLowerCase() === "delete"
+        ) {
+          const refreshToken = localStorage.getItem("refreshToken");
+          if (refreshToken) {
+            config.headers["x-refresh"] = refreshToken;
+          }
+        }
+        if (token) {
+          config.headers["x-token"] = token;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    instance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        console.log("ERRRRRR", error);
+        const originalRequest = error.config;
+
+        const { url, method } = error.config;
+
+        // If the error status is 401 and there is no originalRequest._retry flag,
+        // it means the token has expired and we need to refresh it
+        const retryForRefresh =
+          url !== "/signin" &&
+          url !== "/signup" &&
+          error.response.status === 401 &&
+          !originalRequest._retry;
+        if (
+          retryForRefresh
+          // !(url === "/refresh-token" && method.toLocaleLowerCase() === "delete")
+        ) {
+          originalRequest._retry = true;
+
+          try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            const response = await instance.post("/refresh-token", {
+              refreshToken,
+            });
+
+            if (response.status === 200) {
+              const { token } = response.data;
+
+              localStorage.setItem("token", token);
+
+              // Retry the original request with the new token
+              originalRequest.headers["x-token"] = token;
+              return instance(originalRequest);
+            } else return Promise.reject(response);
+          } catch (err) {
+            // Handle refresh token error or redirect to login
+            console.error(err);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return instance;
   }
 
   constructor() {
@@ -38,7 +106,10 @@ export default class AxiosWrapper implements IApiClient {
   async get<TResponse>(path: string): Promise<TResponse> {
     try {
       const response = await this.client.get<TResponse>(path);
-      return response.data;
+      if (response.status >= 400) {
+        return Promise.reject(response);
+      }
+      return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -51,7 +122,10 @@ export default class AxiosWrapper implements IApiClient {
   ): Promise<TResponse> {
     try {
       const response = await this.client.post<TResponse>(path, payload);
-      return response.data;
+      if (response.status >= 400) {
+        return Promise.reject(response);
+      }
+      return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -64,7 +138,10 @@ export default class AxiosWrapper implements IApiClient {
   ): Promise<TResponse> {
     try {
       const response = await this.client.patch<TResponse>(path, payload);
-      return response.data;
+      if (response.status >= 400) {
+        return Promise.reject(response);
+      }
+      return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -77,7 +154,23 @@ export default class AxiosWrapper implements IApiClient {
   ): Promise<TResponse> {
     try {
       const response = await this.client.put<TResponse>(path, payload);
-      return response.data;
+      if (response.status >= 400) {
+        return Promise.reject(response);
+      }
+      return Promise.resolve<TResponse>(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+    return {} as TResponse;
+  }
+
+  async delete<TResponse>(path: string): Promise<TResponse> {
+    try {
+      const response = await this.client.delete<TResponse>(path);
+      if (response.status >= 400) {
+        return Promise.reject(response);
+      }
+      return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
     }
