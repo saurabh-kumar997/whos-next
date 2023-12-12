@@ -62,7 +62,7 @@ export const refreshToken = createAsyncThunk<
   }
 });
 
-export const signOut = createAsyncThunk<Response<any> | undefined>(
+export const logOut = createAsyncThunk<Response<any> | undefined>(
   "auth/signOut",
   async (_, thunkAPI) => {
     try {
@@ -132,17 +132,17 @@ export const userAuthSlice = createSlice({
         state.user = null;
         state.error = action.error.message || "Something went wrong";
       }),
-      builder.addCase(signOut.fulfilled, (state) => {
+      builder.addCase(logOut.fulfilled, (state) => {
         state.error = "";
         state.user = null;
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         state.loading = false;
       }),
-      builder.addCase(signOut.pending, (state) => {
+      builder.addCase(logOut.pending, (state) => {
         state.loading = true;
       }),
-      builder.addCase(signOut.rejected, (state, action) => {
+      builder.addCase(logOut.rejected, (state, action) => {
         state.loading = false;
         state.user = null;
         state.error = action.error.message || "Something went wrong";

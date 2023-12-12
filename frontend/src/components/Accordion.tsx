@@ -6,7 +6,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { Group } from "../common/types";
-import { onClickPanel } from "../store/CustomAccordionSlice";
+import { onClickPanel, setGroupDetailFlag } from "../store/groupSlice";
 import { Button, Grid } from "@mui/material";
 import Task from "./Task";
 import GroupDetail from "./GroupDetail";
@@ -14,31 +14,27 @@ import CustomeDialog from "./Dialog";
 
 interface CustomAccordionProps {
   group: Group;
-  groupDetailFlag: boolean;
-  handleViewGroupOpen: (groupId: string) => void;
-  handleViewGroupClose: () => void;
 }
 const columns = ["Task", "To Be Done By", "Last Done By", "Actions"];
 export default function CustomAccordion(props: CustomAccordionProps) {
-  const { group, handleViewGroupClose, groupDetailFlag, handleViewGroupOpen } =
-    props;
+  const { group } = props;
 
-  const expandedPanel = useSelector(
-    (state: RootState) => state.accordion.panel
+  const { groupId, groupDetailFlag } = useSelector(
+    (state: RootState) => state.group
   );
   const dispatch = useDispatch();
 
   return (
     <>
       <Accordion
-        expanded={expandedPanel === group._id}
-        onChange={() => dispatch(onClickPanel(group._id))}
+        expanded={group?._id === groupId}
+        onChange={() => dispatch(onClickPanel(group?._id))}
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"
         >
-          <Typography>{group.groupName}</Typography>
+          <Typography>{group?.groupName}</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Grid
@@ -52,7 +48,7 @@ export default function CustomAccordion(props: CustomAccordionProps) {
                 <Grid item>
                   <Button
                     variant="contained"
-                    onClick={() => handleViewGroupOpen(group._id)}
+                    onClick={() => dispatch(setGroupDetailFlag())}
                   >
                     View/Edit Group
                   </Button>
@@ -65,14 +61,14 @@ export default function CustomAccordion(props: CustomAccordionProps) {
               </Grid>
             </Grid>
             <Grid item>
-              <Task group={group} columns={columns} />
+              <Task columns={columns} />
             </Grid>
           </Grid>
         </AccordionDetails>
       </Accordion>
       <CustomeDialog
         title="Group Details"
-        onClose={handleViewGroupClose}
+        onClose={() => dispatch(setGroupDetailFlag())}
         open={groupDetailFlag}
       >
         <GroupDetail group={group} />

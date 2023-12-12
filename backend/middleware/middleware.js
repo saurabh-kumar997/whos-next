@@ -19,7 +19,7 @@ function authenticateMiddleware(req, res, next) {
       let resp = new ResponseModel();
       resp.status = 401;
       resp.message = "Unauthorized";
-      return res.status(400).json(resp);
+      return res.status(resp.status).json(resp);
     }
     req.user = user;
     return next();

@@ -1,23 +1,23 @@
 import data from "../data.json";
 import CustomAccordion from "./Accordion";
 import { Button, Grid } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CustomeDialog from "./Dialog";
 import GroupDetail from "./GroupDetail";
 import { Group } from "../common/types";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { fetchAllGroups, setGroupDetailFlag } from "../store/groupSlice";
 
 function Dashboard() {
-  const [group, setGroup] = useState<Group | null>(null);
-  const [groupDetailFlag, setGroupDetailFlag] = useState<boolean>(false);
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    dispatch(fetchAllGroups());
+  }, []);
 
-  const handleViewGroupOpen = (groupId: string) => {
-    const groupData = data.groups.filter((group) => group._id === groupId);
-    if (groupData.length > 0) setGroup(groupData[0]);
-    setGroupDetailFlag(true);
-  };
-  const handleViewGroupClose = () => {
-    setGroupDetailFlag(false);
-  };
+  const { groups, group, groupDetailFlag } = useSelector(
+    (state: RootState) => state.group
+  );
 
   return (
     <>
@@ -26,22 +26,14 @@ function Dashboard() {
           <Button variant="contained">Create Group</Button>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          {data.groups.map((group) => {
-            return (
-              <CustomAccordion
-                group={group}
-                key={group._id}
-                handleViewGroupOpen={handleViewGroupOpen}
-                handleViewGroupClose={handleViewGroupClose}
-                groupDetailFlag={groupDetailFlag}
-              />
-            );
+          {groups?.map((group: Group) => {
+            return <CustomAccordion group={group} key={group._id} />;
           })}
         </Grid>
       </Grid>
       <CustomeDialog
         title="Group Details"
-        onClose={handleViewGroupClose}
+        onClose={() => dispatch(setGroupDetailFlag())}
         open={groupDetailFlag}
       >
         <GroupDetail group={group} />

@@ -4,15 +4,15 @@ import MenuItem from "@mui/material/MenuItem";
 import AccountCircleSharpIcon from "@mui/icons-material/AccountCircleSharp";
 import { IconButton } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store";
-import { logout } from "../store/authStore";
+import { AppDispatch, RootState } from "../store/store";
+import { logOut } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 
 interface IAvatarProps {
   handleViewMemberData: () => void;
 }
 export default function Avatar(props: IAvatarProps) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   const { handleViewMemberData } = props;
@@ -27,7 +27,7 @@ export default function Avatar(props: IAvatarProps) {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logOut());
     navigate("/signin", { replace: true });
   };
 

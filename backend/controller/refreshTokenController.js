@@ -47,7 +47,7 @@ const deleterefreshTokenRoute = async (req, res, next) => {
     console.log("REFRESH: ", user);
     try {
       if (err || !user) {
-        response.status = 401;
+        response.status = 400;
         response.message = "Invalid Refresh Token";
         return res.status(response.status).json(response);
       }

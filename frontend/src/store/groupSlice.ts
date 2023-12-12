@@ -146,8 +146,9 @@ export const groupSlice = createSlice({
   initialState,
   reducers: {
     onClickPanel: (state, action: PayloadAction<string>) => {
+      console.log("action", action);
       const id = action.payload;
-      state.groupId = state.groupId === id ? "" : id;
+      state.groupId = state.groupId === "" ? id : "";
       if (state.groupId !== "") {
         const indivGrp = state.groups?.filter((item) => item._id === id);
         state.group = indivGrp && indivGrp.length > 0 ? indivGrp[0] : null;
