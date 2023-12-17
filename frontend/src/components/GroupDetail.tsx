@@ -9,10 +9,14 @@ import {
   TextField,
 } from "@mui/material";
 import CustomTable from "./Table";
-import { Group, Member } from "../common/types";
+import { AddMembersReq, Group, Member } from "../common/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Tooltip from "@mui/material/Tooltip";
 import EditIcon from "@mui/icons-material/Edit";
+import { addMember, removeMember, updateGroup } from "../store/groupSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { Response } from "../common/types";
 
 const columns = ["Members", "Action"];
 
@@ -23,6 +27,7 @@ interface MembersTableRowsProps {
   members?: Member[] | null;
 }
 export default function GroupDetail(props: GroupDetailProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const { group } = props;
   const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,11 +42,30 @@ export default function GroupDetail(props: GroupDetailProps) {
   const handleEditFlag = () => {
     setDisabledEdit((state) => !state);
   };
+
+  const handleCancelBtn = () => {
+    if (group) {
+      setGroupName(group.groupName);
+    }
+    handleEditFlag();
+  };
   const handleGroupName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setGroupName(e.target.value);
   };
   const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+  };
+
+  const handleAddMember = () => {
+    dispatch(addMember({ email, groupId: group?._id } as AddMembersReq)).then(
+      (data) => {
+        console.log("DSada", data);
+        const resp = data?.payload as Response<Group>;
+        if (resp.status === 200) {
+          setEmail("");
+        }
+      }
+    );
   };
 
   return (
@@ -72,7 +96,13 @@ export default function GroupDetail(props: GroupDetailProps) {
             {!disabledEdit && (
               <Grid container spacing={2}>
                 <Grid item xs={6} sm={6} md={6} lg={6}>
-                  <Button fullWidth variant="contained">
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={() =>
+                      dispatch(updateGroup({ groupId: group?._id, groupName }))
+                    }
+                  >
                     Save
                   </Button>
                 </Grid>
@@ -81,7 +111,7 @@ export default function GroupDetail(props: GroupDetailProps) {
                     fullWidth
                     color="error"
                     variant="contained"
-                    onClick={handleEditFlag}
+                    onClick={handleCancelBtn}
                   >
                     Cancel
                   </Button>
@@ -102,7 +132,7 @@ export default function GroupDetail(props: GroupDetailProps) {
             />
           </Grid>
           <Grid item xs={4} sm={4} md={4} lg={4}>
-            <Button fullWidth variant="contained">
+            <Button fullWidth variant="contained" onClick={handleAddMember}>
               Add Member
             </Button>
           </Grid>
@@ -122,7 +152,9 @@ export default function GroupDetail(props: GroupDetailProps) {
 }
 
 function MembersTableRows(props: MembersTableRowsProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const { members } = props;
+  const { group } = useSelector((state: RootState) => state.group);
 
   return members && members.length > 0 ? (
     members.map((member) => (
@@ -136,7 +168,17 @@ function MembersTableRows(props: MembersTableRowsProps) {
         <TableCell scope="row" align="center">
           <Stack direction="row" spacing={2} justifyContent="center">
             <Tooltip title="Delete">
-              <IconButton color="error">
+              <IconButton
+                color="error"
+                onClick={() =>
+                  dispatch(
+                    removeMember({
+                      email: member.email,
+                      groupId: group?._id,
+                    } as AddMembersReq)
+                  )
+                }
+              >
                 <DeleteIcon />
               </IconButton>
             </Tooltip>

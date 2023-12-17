@@ -4,9 +4,13 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store/store";
-import { Group } from "../common/types";
-import { onClickPanel, setGroupDetailFlag } from "../store/groupSlice";
+import { AppDispatch, RootState } from "../store/store";
+import { DeleteTaskReq, Group } from "../common/types";
+import {
+  deleteGroup,
+  onClickPanel,
+  setGroupDetailFlag,
+} from "../store/groupSlice";
 import { Button, Grid } from "@mui/material";
 import Task from "./Task";
 import GroupDetail from "./GroupDetail";
@@ -17,12 +21,12 @@ interface CustomAccordionProps {
 }
 const columns = ["Task", "To Be Done By", "Last Done By", "Actions"];
 export default function CustomAccordion(props: CustomAccordionProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const { group } = props;
 
   const { groupId, groupDetailFlag } = useSelector(
     (state: RootState) => state.group
   );
-  const dispatch = useDispatch();
 
   return (
     <>
@@ -48,13 +52,25 @@ export default function CustomAccordion(props: CustomAccordionProps) {
                 <Grid item>
                   <Button
                     variant="contained"
+                    // onClick={() => dispatch(setGroupDetailFlag())}
+                  >
+                    Add Tasks
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant="contained"
                     onClick={() => dispatch(setGroupDetailFlag())}
                   >
                     View/Edit Group
                   </Button>
                 </Grid>
                 <Grid item>
-                  <Button variant="contained" color="error">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => dispatch(deleteGroup(group?._id as string))}
+                  >
                     Delete Group
                   </Button>
                 </Grid>

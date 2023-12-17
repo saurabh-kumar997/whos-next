@@ -2,14 +2,15 @@ import { useState } from "react";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import { IconButton, Stack, Tooltip } from "@mui/material";
-import { Activity, Group } from "../common/types";
+import { Activity, DeleteTaskReq, Group } from "../common/types";
 import CustomActivity from "./Activity";
 import CustomTable from "./Table";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import { RootState } from "../store/store";
-import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { markTaskAsDone, removeTask } from "../store/groupSlice";
 
 interface CustomTaskProps {
   columns: Array<string>;
@@ -55,6 +56,7 @@ function Task(props: CustomTaskProps) {
 }
 
 function CustomContent(props: CustomContentProps) {
+  const dispatch = useDispatch<AppDispatch>();
   const { handleActivity } = props;
   const { group } = useSelector((state: RootState) => state.group);
   return group?.tasks?.map((task) => {
@@ -71,15 +73,25 @@ function CustomContent(props: CustomContentProps) {
           {task.taskName}
         </TableCell>
         <TableCell scope="row" align="center">
-          {/* {task.toBeDoneBy} */}
+          {task.toBeDoneBy.name}
         </TableCell>
         <TableCell scope="row" align="center">
-          {/* {lastDoneBy} */}
+          {/* {task.} */}
         </TableCell>
         <TableCell scope="row" align="center">
           <Stack direction="row" spacing={2} justifyContent="center">
             <Tooltip title="Mark As Done">
-              <IconButton>
+              <IconButton
+                color="success"
+                onClick={() =>
+                  dispatch(
+                    markTaskAsDone({
+                      taskId: task?._id,
+                      groupId: group?._id,
+                    } as DeleteTaskReq)
+                  )
+                }
+              >
                 <DoneAllIcon />
               </IconButton>
             </Tooltip>
@@ -89,7 +101,17 @@ function CustomContent(props: CustomContentProps) {
               </IconButton>
             </Tooltip>
             <Tooltip title="Delete Task">
-              <IconButton color="error">
+              <IconButton
+                color="error"
+                onClick={() =>
+                  dispatch(
+                    removeTask({
+                      taskId: task?._id,
+                      groupId: group?._id,
+                    } as DeleteTaskReq)
+                  )
+                }
+              >
                 <DeleteIcon />
               </IconButton>
             </Tooltip>

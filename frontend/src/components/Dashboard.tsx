@@ -1,13 +1,17 @@
-import data from "../data.json";
 import CustomAccordion from "./Accordion";
 import { Button, Grid } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import CustomeDialog from "./Dialog";
 import GroupDetail from "./GroupDetail";
+import CreateGroup from "./CreateGroup";
 import { Group } from "../common/types";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
-import { fetchAllGroups, setGroupDetailFlag } from "../store/groupSlice";
+import {
+  fetchAllGroups,
+  setGroupDetailFlag,
+  setCreateGroupFlag,
+} from "../store/groupSlice";
 
 function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,7 +19,7 @@ function Dashboard() {
     dispatch(fetchAllGroups());
   }, []);
 
-  const { groups, group, groupDetailFlag } = useSelector(
+  const { groups, group, groupDetailFlag, createGroupFlag } = useSelector(
     (state: RootState) => state.group
   );
 
@@ -23,11 +27,16 @@ function Dashboard() {
     <>
       <Grid container spacing={4}>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          <Button variant="contained">Create Group</Button>
+          <Button
+            variant="contained"
+            onClick={() => dispatch(setCreateGroupFlag())}
+          >
+            Create Group
+          </Button>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12}>
           {groups?.map((group: Group) => {
-            return <CustomAccordion group={group} key={group._id} />;
+            return <CustomAccordion group={group} key={group?._id} />;
           })}
         </Grid>
       </Grid>
@@ -37,6 +46,13 @@ function Dashboard() {
         open={groupDetailFlag}
       >
         <GroupDetail group={group} />
+      </CustomeDialog>
+      <CustomeDialog
+        title="Create Group"
+        onClose={() => dispatch(setCreateGroupFlag())}
+        open={createGroupFlag}
+      >
+        <CreateGroup />
       </CustomeDialog>
     </>
   );

@@ -148,7 +148,7 @@ export const groupSlice = createSlice({
     onClickPanel: (state, action: PayloadAction<string>) => {
       console.log("action", action);
       const id = action.payload;
-      state.groupId = state.groupId === "" ? id : "";
+      state.groupId = state.groupId === id ? "" : id;
       if (state.groupId !== "") {
         const indivGrp = state.groups?.filter((item) => item._id === id);
         state.group = indivGrp && indivGrp.length > 0 ? indivGrp[0] : null;
@@ -226,7 +226,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(addMember.fulfilled, (state, action) => {
         state.loading = false;
-        state.groupDetailFlag = false;
+        // state.groupDetailFlag = false;
         const group = action.payload?.data as Group;
         state.group = group;
         state.groups = state.groups?.map((item) => {
