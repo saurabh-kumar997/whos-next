@@ -128,6 +128,8 @@ export interface GroupState {
   groupDetailFlag: boolean;
   createGroupFlag: boolean;
   addTaskFlag: boolean;
+  isSuccess: boolean;
+  showAddTask: boolean;
 }
 
 const initialState: GroupState = {
@@ -139,6 +141,8 @@ const initialState: GroupState = {
   createGroupFlag: false,
   groupDetailFlag: false,
   addTaskFlag: false,
+  isSuccess: false,
+  showAddTask: false,
 };
 
 export const groupSlice = createSlice({
@@ -165,6 +169,9 @@ export const groupSlice = createSlice({
     setViewTask: (state) => {
       state.addTaskFlag = !state.addTaskFlag;
     },
+    setShowAddTask: (state) => {
+      state.showAddTask = !state.showAddTask;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchAllGroups.fulfilled, (state, action) => {
@@ -176,10 +183,12 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(fetchAllGroups.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(createGroup.fulfilled, (state, action) => {
         state.loading = false;
+        state.isSuccess = true;
         state.groups = [
           ...(state.groups as Group[]),
           action.payload?.data as Group,
@@ -191,6 +200,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(createGroup.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(deleteGroup.fulfilled, (state, action) => {
@@ -203,6 +213,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(deleteGroup.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(updateGroup.fulfilled, (state, action) => {
@@ -222,10 +233,12 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(updateGroup.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(addMember.fulfilled, (state, action) => {
         state.loading = false;
+        state.isSuccess = true;
         // state.groupDetailFlag = false;
         const group = action.payload?.data as Group;
         state.group = group;
@@ -241,6 +254,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(addMember.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(removeMember.fulfilled, (state, action) => {
@@ -259,10 +273,12 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(removeMember.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(addTask.fulfilled, (state, action) => {
         state.loading = false;
+        state.isSuccess = true;
         const group = action.payload?.data as Group;
         state.group = group;
         state.groups = state.groups?.map((item) => {
@@ -278,6 +294,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(addTask.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(removeTask.fulfilled, (state, action) => {
@@ -296,6 +313,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(removeTask.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       }),
       builder.addCase(markTaskAsDone.fulfilled, (state, action) => {
@@ -314,6 +332,7 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(markTaskAsDone.rejected, (state, action) => {
         state.loading = false;
+        state.isSuccess = false;
         state.error = action.error.message || "Something went wrong!!";
       });
   },
@@ -324,6 +343,7 @@ export const {
   setGroupDetailFlag,
   setCreateGroupFlag,
   setViewTask,
+  setShowAddTask,
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

@@ -28,6 +28,9 @@ interface MembersTableRowsProps {
 }
 export default function GroupDetail(props: GroupDetailProps) {
   const dispatch = useDispatch<AppDispatch>();
+
+  const { isSuccess } = useSelector((state: RootState) => state.group);
+
   const { group } = props;
   const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
@@ -59,9 +62,9 @@ export default function GroupDetail(props: GroupDetailProps) {
   const handleAddMember = () => {
     dispatch(addMember({ email, groupId: group?._id } as AddMembersReq)).then(
       (data) => {
-        console.log("DSada", data);
-        const resp = data?.payload as Response<Group>;
-        if (resp.status === 200) {
+        console.log("DATA", data);
+        console.log("IsSUCCESS", isSuccess);
+        if (isSuccess) {
           setEmail("");
         }
       }
