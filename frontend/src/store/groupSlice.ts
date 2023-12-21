@@ -6,6 +6,7 @@ import {
   AddMembersReq,
   CreateTaskReq,
   DeleteTaskReq,
+  Activity,
 } from "../common/types";
 import { groupService } from "../apiServices/services";
 
@@ -127,9 +128,13 @@ export interface GroupState {
   groupId: string;
   groupDetailFlag: boolean;
   createGroupFlag: boolean;
-  addTaskFlag: boolean;
+  showActivity: boolean;
   isSuccess: boolean;
   showAddTask: boolean;
+  message: string;
+  isError: boolean;
+  openSnackBar: boolean;
+  activity: Activity[] | [] | null | undefined;
 }
 
 const initialState: GroupState = {
@@ -138,11 +143,15 @@ const initialState: GroupState = {
   loading: false,
   error: "",
   groupId: "",
+  message: "",
+  isError: false,
   createGroupFlag: false,
   groupDetailFlag: false,
-  addTaskFlag: false,
+  showActivity: false,
   isSuccess: false,
   showAddTask: false,
+  openSnackBar: false,
+  activity: [],
 };
 
 export const groupSlice = createSlice({
@@ -152,12 +161,14 @@ export const groupSlice = createSlice({
     onClickPanel: (state, action: PayloadAction<string>) => {
       console.log("action", action);
       const id = action.payload;
-      state.groupId = state.groupId === id ? "" : id;
-      if (state.groupId !== "") {
+      if (state.groupId === id) {
+        state.groupId = "";
+        state.group = null;
+      } else {
+        state.groupId = id;
+        state.showAddTask = false;
         const indivGrp = state.groups?.filter((item) => item._id === id);
         state.group = indivGrp && indivGrp.length > 0 ? indivGrp[0] : null;
-      } else {
-        state.group = null;
       }
     },
     setGroupDetailFlag: (state) => {
@@ -166,17 +177,27 @@ export const groupSlice = createSlice({
     setCreateGroupFlag: (state) => {
       state.createGroupFlag = !state.createGroupFlag;
     },
-    setViewTask: (state) => {
-      state.addTaskFlag = !state.addTaskFlag;
+    setShowActivity: (state, action: PayloadAction<string>) => {
+      state.showActivity = !state.showActivity;
+      if (state.showActivity) {
+        state.activity = state.group?.tasks?.filter(
+          (task) => task._id === action.payload
+        )[0].activity;
+      }
     },
     setShowAddTask: (state) => {
       state.showAddTask = !state.showAddTask;
+    },
+    setOpenSnackBar: (state, action: PayloadAction<boolean>) => {
+      state.openSnackBar = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchAllGroups.fulfilled, (state, action) => {
       state.loading = false;
       state.groups = action.payload?.data || [];
+      state.message = action.payload?.message || "";
+      state.openSnackBar = state.message !== "";
     }),
       builder.addCase(fetchAllGroups.pending, (state) => {
         state.loading = true;
@@ -184,7 +205,9 @@ export const groupSlice = createSlice({
       builder.addCase(fetchAllGroups.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(createGroup.fulfilled, (state, action) => {
         state.loading = false;
@@ -194,6 +217,8 @@ export const groupSlice = createSlice({
           action.payload?.data as Group,
         ];
         state.createGroupFlag = false;
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(createGroup.pending, (state) => {
         state.loading = true;
@@ -201,12 +226,16 @@ export const groupSlice = createSlice({
       builder.addCase(createGroup.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(deleteGroup.fulfilled, (state, action) => {
         state.loading = false;
         const delId = action.payload?.data;
         state.groups = state.groups?.filter((group) => group._id !== delId);
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(deleteGroup.pending, (state) => {
         state.loading = true;
@@ -214,7 +243,9 @@ export const groupSlice = createSlice({
       builder.addCase(deleteGroup.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(updateGroup.fulfilled, (state, action) => {
         state.loading = false;
@@ -227,6 +258,8 @@ export const groupSlice = createSlice({
           return group;
         });
         state.groupDetailFlag = false;
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(updateGroup.pending, (state) => {
         state.loading = true;
@@ -234,7 +267,9 @@ export const groupSlice = createSlice({
       builder.addCase(updateGroup.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(addMember.fulfilled, (state, action) => {
         state.loading = false;
@@ -248,6 +283,8 @@ export const groupSlice = createSlice({
           }
           return item;
         });
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(addMember.pending, (state) => {
         state.loading = true;
@@ -255,7 +292,9 @@ export const groupSlice = createSlice({
       builder.addCase(addMember.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(removeMember.fulfilled, (state, action) => {
         state.loading = false;
@@ -267,6 +306,8 @@ export const groupSlice = createSlice({
           }
           return item;
         });
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(removeMember.pending, (state) => {
         state.loading = true;
@@ -274,7 +315,8 @@ export const groupSlice = createSlice({
       builder.addCase(removeMember.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
       }),
       builder.addCase(addTask.fulfilled, (state, action) => {
         state.loading = false;
@@ -287,7 +329,8 @@ export const groupSlice = createSlice({
           }
           return item;
         });
-        state.addTaskFlag = false;
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(addTask.pending, (state) => {
         state.loading = true;
@@ -295,7 +338,9 @@ export const groupSlice = createSlice({
       builder.addCase(addTask.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(removeTask.fulfilled, (state, action) => {
         state.loading = false;
@@ -307,6 +352,9 @@ export const groupSlice = createSlice({
           }
           return item;
         });
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
+        state.openSnackBar = true;
       }),
       builder.addCase(removeTask.pending, (state) => {
         state.loading = true;
@@ -314,7 +362,9 @@ export const groupSlice = createSlice({
       builder.addCase(removeTask.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       }),
       builder.addCase(markTaskAsDone.fulfilled, (state, action) => {
         state.loading = false;
@@ -326,6 +376,8 @@ export const groupSlice = createSlice({
           }
           return item;
         });
+        state.message = action.payload?.message || "";
+        state.openSnackBar = state.message !== "";
       }),
       builder.addCase(markTaskAsDone.pending, (state) => {
         state.loading = true;
@@ -333,7 +385,9 @@ export const groupSlice = createSlice({
       builder.addCase(markTaskAsDone.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = false;
-        state.error = action.error.message || "Something went wrong!!";
+        state.message = action.error.message || "Something went wrong!!";
+        state.isError = true;
+        state.openSnackBar = true;
       });
   },
 });
@@ -342,8 +396,9 @@ export const {
   onClickPanel,
   setGroupDetailFlag,
   setCreateGroupFlag,
-  setViewTask,
+  setShowActivity,
   setShowAddTask,
+  setOpenSnackBar,
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

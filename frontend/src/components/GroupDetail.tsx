@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import CustomTable from "./Table";
-import { AddMembersReq, Group, Member } from "../common/types";
+import { AddMembersReq, Group } from "../common/types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Tooltip from "@mui/material/Tooltip";
 import EditIcon from "@mui/icons-material/Edit";
@@ -20,18 +20,13 @@ import { Response } from "../common/types";
 
 const columns = ["Members", "Action"];
 
-interface GroupDetailProps {
-  group: Group | null;
-}
-interface MembersTableRowsProps {
-  members?: Member[] | null;
-}
-export default function GroupDetail(props: GroupDetailProps) {
+export default function GroupDetail() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { isSuccess } = useSelector((state: RootState) => state.group);
+  const { group } = useSelector((state: RootState) => state.group);
+  const { user } = useSelector((state: RootState) => state.userAuth);
 
-  const { group } = props;
+  // const { group } = props;
   const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
   const [disabledEdit, setDisabledEdit] = useState(true);
@@ -62,9 +57,8 @@ export default function GroupDetail(props: GroupDetailProps) {
   const handleAddMember = () => {
     dispatch(addMember({ email, groupId: group?._id } as AddMembersReq)).then(
       (data) => {
-        console.log("DATA", data);
-        console.log("IsSUCCESS", isSuccess);
-        if (isSuccess) {
+        const res = data.payload as Response<Group>;
+        if (res.status === 200) {
           setEmail("");
         }
       }
@@ -124,28 +118,30 @@ export default function GroupDetail(props: GroupDetailProps) {
           </Grid>
         </Grid>
       </Grid>
-      <Grid item xs={12} sm={12} md={12} lg={12}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={8} sm={8} md={8} lg={8}>
-            <TextField
-              label="Email"
-              fullWidth
-              value={email}
-              onChange={handleEmail}
-            />
-          </Grid>
-          <Grid item xs={4} sm={4} md={4} lg={4}>
-            <Button fullWidth variant="contained" onClick={handleAddMember}>
-              Add Member
-            </Button>
+      {user?._id === group?.admin && (
+        <Grid item xs={12} sm={12} md={12} lg={12}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={8} sm={8} md={8} lg={8}>
+              <TextField
+                label="Email"
+                fullWidth
+                value={email}
+                onChange={handleEmail}
+              />
+            </Grid>
+            <Grid item xs={4} sm={4} md={4} lg={4}>
+              <Button fullWidth variant="contained" onClick={handleAddMember}>
+                Add Member
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
+      )}
       <Grid item xs={12} sm={12} md={12} lg={12}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12} lg={12}>
             <CustomTable columns={columns}>
-              <MembersTableRows members={group?.members} />
+              <MembersTableRows />
             </CustomTable>
           </Grid>
         </Grid>
@@ -154,10 +150,12 @@ export default function GroupDetail(props: GroupDetailProps) {
   );
 }
 
-function MembersTableRows(props: MembersTableRowsProps) {
+function MembersTableRows() {
   const dispatch = useDispatch<AppDispatch>();
-  const { members } = props;
   const { group } = useSelector((state: RootState) => state.group);
+  const { user } = useSelector((state: RootState) => state.userAuth);
+
+  const members = group?.members || [];
 
   return members && members.length > 0 ? (
     members.map((member) => (
@@ -170,21 +168,23 @@ function MembersTableRows(props: MembersTableRowsProps) {
         </TableCell>
         <TableCell scope="row" align="center">
           <Stack direction="row" spacing={2} justifyContent="center">
-            <Tooltip title="Delete">
-              <IconButton
-                color="error"
-                onClick={() =>
-                  dispatch(
-                    removeMember({
-                      email: member.email,
-                      groupId: group?._id,
-                    } as AddMembersReq)
-                  )
-                }
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            {user?._id === group?.admin && (
+              <Tooltip title="Delete">
+                <IconButton
+                  color="error"
+                  onClick={() =>
+                    dispatch(
+                      removeMember({
+                        email: member.email,
+                        groupId: group?._id,
+                      } as AddMembersReq)
+                    )
+                  }
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
         </TableCell>
       </TableRow>

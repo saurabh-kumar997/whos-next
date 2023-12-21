@@ -51,6 +51,7 @@ const createGroup = async (req, res, next) => {
 
       const group = await Groups.create(data);
       response.data = await Groups.getGroupData(group._id);
+      response.message = "Group created successfully";
       res.status(response.status).json(response);
     }
   } catch (err) {
@@ -68,6 +69,7 @@ const updateGroup = async (req, res, next) => {
     if (group) {
       await group.updateOne({ groupName: body.groupName });
       response.data = await Groups.getGroupData(groupId);
+      response.message = "Group updated successfully";
       return res.status(response.status).json(response);
     }
     response.status = 400;

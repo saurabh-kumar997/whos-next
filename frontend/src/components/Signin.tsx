@@ -36,7 +36,7 @@ const Login = (): React.ReactElement => {
   const [loader, setLoader] = useState(false);
 
   const [error, setError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | undefined>("");
 
   const onPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPassword({ ...passwordValues, [event.target.name]: event.target.value });
@@ -53,23 +53,31 @@ const Login = (): React.ReactElement => {
     setLoader(true);
     event.preventDefault();
 
-    let { password, email } = passwordValues;
-    if (email === "" || password === "") {
+    const { password, email } = passwordValues;
+    if (email.trim() === "" || password.trim() === "") {
       setLoader(false);
       setError(true);
       setErrorMsg("Please provide required fields value");
     } else {
       setError(false);
       setErrorMsg("");
-      const body = { email, password };
+      const body = { email: email.trim(), password: password.trim() };
       const resp = await userService.signIn(body);
+      console.log("RESP", resp);
 
       if (resp?.status === 200) {
+        setLoader(false);
+        setError(false);
+        setErrorMsg("");
         const token = resp.data ? resp.data.token : "";
         const user = resp.data ? resp.data.user : null;
         localStorage.setItem("token", token);
         dispatch(setAuthUser(user));
         navigate("/dashboard", { replace: true });
+      } else {
+        setLoader(false);
+        setError(true);
+        setErrorMsg(resp?.message);
       }
     }
   };
@@ -113,14 +121,14 @@ const Login = (): React.ReactElement => {
                     value={passwordValues.email}
                     onChange={onPasswordChange}
                     name="email"
-                    error={error && !Boolean(passwordValues.email)}
+                    error={error && !passwordValues.email}
                   />
                 </Grid>
                 <Grid item xs={12} sm={12} md={12}>
                   <FormControl
                     variant="outlined"
                     fullWidth
-                    error={error && !Boolean(passwordValues.password)}
+                    error={error && !passwordValues.password}
                     required
                   >
                     <InputLabel htmlFor="outlined-adornment-password">

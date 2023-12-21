@@ -7,6 +7,7 @@ export type LastDoneBy = {
   name: string;
 };
 export type Activity = {
+  _id: string;
   lastDoneBy: LastDoneBy;
   doneOnDate: string;
 };

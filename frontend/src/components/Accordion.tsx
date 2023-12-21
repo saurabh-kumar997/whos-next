@@ -21,7 +21,7 @@ import AddTask from "./AddTask";
 interface CustomAccordionProps {
   group: Group;
 }
-const columns = ["Task", "To Be Done By", "Last Done By", "Actions"];
+const columns = ["Task", "To Be Done By", "Actions"];
 export default function CustomAccordion(props: CustomAccordionProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { group } = props;
@@ -100,7 +100,7 @@ export default function CustomAccordion(props: CustomAccordionProps) {
         onClose={() => dispatch(setGroupDetailFlag())}
         open={groupDetailFlag}
       >
-        <GroupDetail group={group} />
+        <GroupDetail />
       </CustomeDialog>
     </>
   );

@@ -1,6 +1,9 @@
 import * as React from "react";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertColor, AlertProps } from "@mui/material/Alert";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { setOpenSnackBar } from "../store/groupSlice";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -9,13 +12,11 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-interface CustomSnackbarsProps {
-  message: string;
-  severity?: AlertColor | "success";
-}
-export function CustomSnackbars(props: CustomSnackbarsProps) {
-  const { severity, message } = props;
-  const [open, setOpen] = React.useState(false);
+export default function CustomSnackbars() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { openSnackBar, isError, message } = useSelector(
+    (state: RootState) => state.group
+  );
 
   const handleClose = (
     event?: React.SyntheticEvent | Event,
@@ -24,26 +25,23 @@ export function CustomSnackbars(props: CustomSnackbarsProps) {
     if (reason === "clickaway") {
       return;
     }
-    setOpen(false);
+    dispatch(setOpenSnackBar(false));
   };
 
   return (
     <Snackbar
-      open={open}
+      open={openSnackBar}
       autoHideDuration={6000}
       onClose={handleClose}
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >
-      <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+      <Alert
+        onClose={handleClose}
+        severity={isError ? "error" : "success"}
+        sx={{ width: "100%" }}
+      >
         {message}
       </Alert>
     </Snackbar>
   );
-}
-
-export function ErrorSnackbar(message: string) {
-  return <CustomSnackbars message={message} severity="error" />;
-}
-export function SuccessSnackbar(message: string) {
-  return <CustomSnackbars message={message} />;
 }

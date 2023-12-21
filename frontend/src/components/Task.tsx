@@ -10,60 +10,35 @@ import DoneAllIcon from "@mui/icons-material/DoneAll";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import { AppDispatch, RootState } from "../store/store";
 import { useDispatch, useSelector } from "react-redux";
-import { markTaskAsDone, removeTask } from "../store/groupSlice";
+import {
+  markTaskAsDone,
+  removeTask,
+  setShowActivity,
+} from "../store/groupSlice";
 
 interface CustomTaskProps {
   columns: Array<string>;
 }
 
-interface CustomContentProps {
-  handleActivity: (taskId: string) => void;
-  activityFlag: boolean;
-}
-
 function Task(props: CustomTaskProps) {
   const { columns } = props;
-  const [activity, setActivity] = useState(new Array<Activity>());
-  const [activityFlag, setActivityFlag] = useState(false);
 
-  const handleActivity = (taskId: string) => {
-    // console.log("Clicked");
-    // const task = group?.tasks.filter((task) => task._id === taskId);
-    // const activity =
-    //   task.length > 0 && task[0].activity ? task[0].activity : [];
-    // setActivity(activity);
-    // setActivityFlag(true);
-  };
-
-  const handleActivityClose = () => {
-    setActivityFlag(false);
-  };
   return (
     <>
       <CustomTable columns={columns}>
-        <CustomContent
-          handleActivity={handleActivity}
-          activityFlag={activityFlag}
-        />
+        <CustomContent />
       </CustomTable>
-      <CustomActivity
-        activityFlag={activityFlag}
-        activity={activity}
-        handleActivityClose={handleActivityClose}
-      />
+      <CustomActivity />
     </>
   );
 }
 
-function CustomContent(props: CustomContentProps) {
+function CustomContent() {
   const dispatch = useDispatch<AppDispatch>();
-  const { handleActivity } = props;
   const { group } = useSelector((state: RootState) => state.group);
+  const { user } = useSelector((state: RootState) => state.userAuth);
+
   return group?.tasks?.map((task) => {
-    // let lastDoneBy =
-    //   task?.activity?.length > 0
-    //     ? task.activity[task.activity.length - 1]?.lastDoneBy
-    //     : null;
     return (
       <TableRow
         key={task._id}
@@ -76,45 +51,46 @@ function CustomContent(props: CustomContentProps) {
           {task.toBeDoneBy.name}
         </TableCell>
         <TableCell scope="row" align="center">
-          {/* {task.} */}
-        </TableCell>
-        <TableCell scope="row" align="center">
           <Stack direction="row" spacing={2} justifyContent="center">
-            <Tooltip title="Mark As Done">
-              <IconButton
-                color="success"
-                onClick={() =>
-                  dispatch(
-                    markTaskAsDone({
-                      taskId: task?._id,
-                      groupId: group?._id,
-                    } as DeleteTaskReq)
-                  )
-                }
-              >
-                <DoneAllIcon />
-              </IconButton>
-            </Tooltip>
+            {user?._id === task.toBeDoneBy._id && (
+              <Tooltip title="Mark As Done">
+                <IconButton
+                  color="success"
+                  onClick={() =>
+                    dispatch(
+                      markTaskAsDone({
+                        taskId: task?._id,
+                        groupId: group?._id,
+                      } as DeleteTaskReq)
+                    )
+                  }
+                >
+                  <DoneAllIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title="See Past Activity">
-              <IconButton onClick={() => handleActivity(task._id)}>
+              <IconButton onClick={() => dispatch(setShowActivity(task._id))}>
                 <RemoveRedEyeIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete Task">
-              <IconButton
-                color="error"
-                onClick={() =>
-                  dispatch(
-                    removeTask({
-                      taskId: task?._id,
-                      groupId: group?._id,
-                    } as DeleteTaskReq)
-                  )
-                }
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            {user?._id === group.admin && (
+              <Tooltip title="Delete Task">
+                <IconButton
+                  color="error"
+                  onClick={() =>
+                    dispatch(
+                      removeTask({
+                        taskId: task?._id,
+                        groupId: group?._id,
+                      } as DeleteTaskReq)
+                    )
+                  }
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
         </TableCell>
       </TableRow>

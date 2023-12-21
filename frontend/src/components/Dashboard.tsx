@@ -11,7 +11,11 @@ import {
   fetchAllGroups,
   setGroupDetailFlag,
   setCreateGroupFlag,
+  setShowActivity,
 } from "../store/groupSlice";
+import Loader from "./Loader";
+import CustomSnackbars from "./SnackBar";
+import TimeLine from "./TimeLine";
 
 function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,12 +23,13 @@ function Dashboard() {
     dispatch(fetchAllGroups());
   }, []);
 
-  const { groups, group, groupDetailFlag, createGroupFlag } = useSelector(
-    (state: RootState) => state.group
-  );
+  const { groups, groupDetailFlag, createGroupFlag, showActivity } =
+    useSelector((state: RootState) => state.group);
 
   return (
     <>
+      <Loader />
+      <CustomSnackbars />
       <Grid container spacing={4}>
         <Grid item xs={12} sm={12} md={12} lg={12}>
           <Button
@@ -45,7 +50,7 @@ function Dashboard() {
         onClose={() => dispatch(setGroupDetailFlag())}
         open={groupDetailFlag}
       >
-        <GroupDetail group={group} />
+        <GroupDetail />
       </CustomeDialog>
       <CustomeDialog
         title="Create Group"
@@ -53,6 +58,13 @@ function Dashboard() {
         open={createGroupFlag}
       >
         <CreateGroup />
+      </CustomeDialog>
+      <CustomeDialog
+        title="Timeline"
+        onClose={() => dispatch(setShowActivity(""))}
+        open={showActivity}
+      >
+        <TimeLine />
       </CustomeDialog>
     </>
   );

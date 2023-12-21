@@ -9,10 +9,10 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { Done as DoneIcon, Clear as ClearIcon } from "@mui/icons-material";
-import { CreateTaskReq, Group } from "../common/types";
+import { CreateTaskReq, Group, Response } from "../common/types";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { addTask, setShowAddTask } from "../store/groupSlice";
 
 interface AddTaskProps {
@@ -54,7 +54,8 @@ export default function AddTask(props: AddTaskProps) {
         toBeDoneBy: toBeAssignedTo,
       } as CreateTaskReq;
       dispatch(addTask(taskReq)).then((data) => {
-        if (isSuccess) {
+        const res = data.payload as Response<Group>;
+        if (res.status === 200) {
           setTask("");
           setToBeAssignedTo("");
         }
