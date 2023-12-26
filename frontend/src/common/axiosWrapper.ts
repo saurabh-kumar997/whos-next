@@ -15,8 +15,6 @@ export default class AxiosWrapper implements IApiClient {
 
   protected createHeaders = () => {
     const headers = new AxiosHeaders();
-    const token: string | null = localStorage.getItem("token");
-
     headers["Content-Type"] = "application/json";
     headers["Accept"] = "application/json";
     return headers;
@@ -64,7 +62,7 @@ export default class AxiosWrapper implements IApiClient {
         const retryForRefresh =
           url !== "/signin" &&
           url !== "/signup" &&
-          error.response.status === 401 &&
+          error.response?.status === 401 &&
           !originalRequest._retry;
         if (
           retryForRefresh
@@ -92,7 +90,7 @@ export default class AxiosWrapper implements IApiClient {
             console.error(err);
           }
         }
-        return Promise.reject(error);
+        return Promise.reject(error.response?.data);
       }
     );
 
@@ -112,8 +110,8 @@ export default class AxiosWrapper implements IApiClient {
       return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
+      return error as TResponse;
     }
-    return {} as TResponse;
   }
 
   async post<TRequest, TResponse>(
@@ -122,14 +120,15 @@ export default class AxiosWrapper implements IApiClient {
   ): Promise<TResponse> {
     try {
       const response = await this.client.post<TResponse>(path, payload);
+      console.log("RESPONSEEEEE", response);
       if (response.status >= 400) {
         return Promise.reject(response);
       }
       return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
+      return error as TResponse;
     }
-    return {} as TResponse;
   }
 
   async patch<TRequest, TResponse>(
@@ -144,8 +143,8 @@ export default class AxiosWrapper implements IApiClient {
       return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
+      return error as TResponse;
     }
-    return {} as TResponse;
   }
 
   async put<TRequest, TResponse>(
@@ -160,8 +159,8 @@ export default class AxiosWrapper implements IApiClient {
       return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
+      return error as TResponse;
     }
-    return {} as TResponse;
   }
 
   async delete<TResponse>(path: string): Promise<TResponse> {
@@ -173,7 +172,7 @@ export default class AxiosWrapper implements IApiClient {
       return Promise.resolve<TResponse>(response.data);
     } catch (error) {
       console.error(error);
+      return error as TResponse;
     }
-    return {} as TResponse;
   }
 }

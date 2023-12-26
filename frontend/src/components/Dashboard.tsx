@@ -16,6 +16,7 @@ import {
 import Loader from "./Loader";
 import CustomSnackbars from "./SnackBar";
 import TimeLine from "./TimeLine";
+import NoDataFound from "./NoDataFound";
 
 function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,9 +41,13 @@ function Dashboard() {
           </Button>
         </Grid>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          {groups?.map((group: Group) => {
-            return <CustomAccordion group={group} key={group?._id} />;
-          })}
+          {groups && groups.length > 0 ? (
+            groups?.map((group: Group) => {
+              return <CustomAccordion group={group} key={group?._id} />;
+            })
+          ) : (
+            <NoDataFound />
+          )}
         </Grid>
       </Grid>
       <CustomeDialog

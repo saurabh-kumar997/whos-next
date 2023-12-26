@@ -1,4 +1,3 @@
-import * as React from "react";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
@@ -9,6 +8,7 @@ import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
 import { Activity } from "../common/types";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
+import NoDataFound from "./NoDataFound";
 
 export default function TimeLine() {
   const { activity } = useSelector((state: RootState) => state.group);
@@ -31,6 +31,6 @@ export default function TimeLine() {
       })}
     </Timeline>
   ) : (
-    <></>
+    <NoDataFound />
   );
 }

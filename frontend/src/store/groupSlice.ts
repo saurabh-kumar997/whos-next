@@ -163,7 +163,6 @@ export const groupSlice = createSlice({
       const id = action.payload;
       if (state.groupId === id) {
         state.groupId = "";
-        state.group = null;
       } else {
         state.groupId = id;
         state.showAddTask = false;

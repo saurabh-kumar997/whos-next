@@ -15,6 +15,7 @@ import {
   removeTask,
   setShowActivity,
 } from "../store/groupSlice";
+import NoDataFound from "./NoDataFound";
 
 interface CustomTaskProps {
   columns: Array<string>;
@@ -22,14 +23,17 @@ interface CustomTaskProps {
 
 function Task(props: CustomTaskProps) {
   const { columns } = props;
+  const { group } = useSelector((state: RootState) => state.group);
 
-  return (
+  return group?.tasks && group?.tasks?.length > 0 ? (
     <>
       <CustomTable columns={columns}>
         <CustomContent />
       </CustomTable>
       <CustomActivity />
     </>
+  ) : (
+    <NoDataFound />
   );
 }
 

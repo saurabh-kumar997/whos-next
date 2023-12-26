@@ -68,7 +68,7 @@ passport.use(
 
         if (!validate) {
           resp.status = 401;
-          resp.message = "Wrong Password";
+          resp.message = "Invalid email or password";
           return done(null, false, resp);
         }
         console.log("strategy: ", validate);
