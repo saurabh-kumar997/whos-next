@@ -6,6 +6,7 @@ import {
   Grid,
   Link,
   TextField,
+  Typography,
 } from "@mui/material";
 import React, { SyntheticEvent, useState } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -65,8 +66,7 @@ function Signup(): React.ReactElement {
   };
 
   const validateFields = () => {
-    debugger;
-    let { name, email, retypePassword, password } = signUpData;
+    const { name, email, retypePassword, password } = signUpData;
     let isValid = false;
     setError(false);
     if (
@@ -129,91 +129,99 @@ function Signup(): React.ReactElement {
                 {error && <Alert severity={"error"}>{errorMsg}</Alert>}
               </Grid>
             </Grid>
-            <form onSubmit={onSignUpSubmit}>
-              <Grid container>
-                <Grid item xs={12} sm={12} md={12}>
+
+            <Grid container direction="column" spacing={2}>
+              <Grid item>
+                <form onSubmit={onSignUpSubmit}>
                   <Grid container>
                     <Grid item xs={12} sm={12} md={12}>
-                      <TextField
-                        label="Name"
-                        variant="outlined"
-                        fullWidth
-                        required
-                        value={signUpData.name}
-                        onChange={onInputChange}
-                        name="name"
-                        error={error && !Boolean(signUpData.name)}
-                        disabled={loader}
-                        helperText={
-                          error &&
-                          !validateText(signUpData.name) &&
-                          "Name field should contain only alphabets."
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12} md={12}>
-                      <TextField
-                        label="Email"
-                        variant="outlined"
-                        fullWidth
-                        required
-                        value={signUpData.email}
-                        onChange={onInputChange}
-                        name="email"
-                        error={error && !Boolean(signUpData.email)}
-                        disabled={loader}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12} md={12}>
-                      <TextField
-                        label="Password"
-                        variant="outlined"
-                        fullWidth
-                        required
-                        value={signUpData.password}
-                        onChange={onInputChange}
-                        name="password"
-                        error={error && !Boolean(signUpData.password)}
-                        type="password"
-                        disabled={loader}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12} md={12}>
-                      <TextField
-                        label="Retype Password"
-                        variant="outlined"
-                        fullWidth
-                        required
-                        value={signUpData.retypePassword}
-                        onChange={onInputChange}
-                        name="retypePassword"
-                        type="password"
-                        error={error && !Boolean(signUpData.retypePassword)}
-                        disabled={loader}
-                      />
+                      <Grid container>
+                        <Grid item xs={12} sm={12} md={12}>
+                          <TextField
+                            label="Name"
+                            variant="outlined"
+                            fullWidth
+                            required
+                            value={signUpData.name}
+                            onChange={onInputChange}
+                            name="name"
+                            error={error && !signUpData.name}
+                            disabled={loader}
+                            helperText={
+                              error &&
+                              !validateText(signUpData.name) &&
+                              "Name field should contain only alphabets."
+                            }
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={12}>
+                          <TextField
+                            label="Email"
+                            variant="outlined"
+                            fullWidth
+                            required
+                            value={signUpData.email}
+                            onChange={onInputChange}
+                            name="email"
+                            error={error && !signUpData.email}
+                            disabled={loader}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={12}>
+                          <TextField
+                            label="Password"
+                            variant="outlined"
+                            fullWidth
+                            required
+                            value={signUpData.password}
+                            onChange={onInputChange}
+                            name="password"
+                            error={error && !signUpData.password}
+                            type="password"
+                            disabled={loader}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={12}>
+                          <TextField
+                            label="Retype Password"
+                            variant="outlined"
+                            fullWidth
+                            required
+                            value={signUpData.retypePassword}
+                            onChange={onInputChange}
+                            name="retypePassword"
+                            type="password"
+                            error={error && !signUpData.retypePassword}
+                            disabled={loader}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container>
+                        <Grid item xs={12} sm={12} md={12}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            onClick={onSignUpSubmit}
+                            disabled={loader}
+                          >
+                            Sign Up
+                          </Button>
+                        </Grid>
+                      </Grid>
                     </Grid>
                   </Grid>
-                  <Grid container>
-                    <Grid item xs={12} sm={12} md={12}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={onSignUpSubmit}
-                        disabled={loader}
-                      >
-                        Sign Up
-                      </Button>
-                    </Grid>
+                </form>
+              </Grid>
+              <Grid item>
+                <Grid container justifyContent={"center"}>
+                  <Grid item>
+                    <Link href="/signin" underline="none">
+                      <Typography variant="body1" color="steelblue">
+                        Already a member? Signin
+                      </Typography>
+                    </Link>
                   </Grid>
                 </Grid>
-              </Grid>
-            </form>
-
-            <Grid container justifyContent={"center"}>
-              <Grid item>
-                <Link href="/signin" underline="none">
-                  <h4>Already a member?</h4>
-                </Link>
               </Grid>
             </Grid>
           </CardContent>

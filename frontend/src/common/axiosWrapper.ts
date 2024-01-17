@@ -1,4 +1,8 @@
+import { ToolkitStore } from "@reduxjs/toolkit/dist/configureStore";
 import Axios, { AxiosHeaders, AxiosInstance } from "axios";
+import { setLogOut } from "../store/groupSlice";
+import { AppDispatch } from "../store/store";
+import { RefTokenResp } from "./types";
 
 export interface IApiClient {
   post<TRequest, TResponse>(path: string, object: TRequest): Promise<TResponse>;
@@ -12,6 +16,7 @@ export interface IApiClient {
 
 export default class AxiosWrapper implements IApiClient {
   private client: AxiosInstance;
+  private store: ToolkitStore;
 
   protected createHeaders = () => {
     const headers = new AxiosHeaders();
@@ -53,9 +58,10 @@ export default class AxiosWrapper implements IApiClient {
       (response) => response,
       async (error) => {
         console.log("ERRRRRR", error);
+        const dispatch: AppDispatch = this.store.dispatch;
         const originalRequest = error.config;
 
-        const { url, method } = error.config;
+        const { url } = error.config;
 
         // If the error status is 401 and there is no originalRequest._retry flag,
         // it means the token has expired and we need to refresh it
@@ -76,29 +82,36 @@ export default class AxiosWrapper implements IApiClient {
               refreshToken,
             });
 
+            console.log("responseresponse", response);
             if (response.status === 200) {
-              const { token } = response.data;
+              const { token } = response.data?.data as RefTokenResp;
 
               localStorage.setItem("token", token);
 
               // Retry the original request with the new token
               originalRequest.headers["x-token"] = token;
               return instance(originalRequest);
-            } else return Promise.reject(response);
+            }
+            return Promise.reject(response);
           } catch (err) {
             // Handle refresh token error or redirect to login
+            console.log("ERRRORORRRPOROROROROR", err);
+            dispatch(setLogOut());
             console.error(err);
+            return Promise.reject(err);
           }
+        } else {
+          return Promise.reject(error.response?.data);
         }
-        return Promise.reject(error.response?.data);
       }
     );
 
     return instance;
   }
 
-  constructor() {
+  constructor(store: ToolkitStore) {
     this.client = this.createAxiosClient();
+    this.store = store;
   }
 
   async get<TResponse>(path: string): Promise<TResponse> {

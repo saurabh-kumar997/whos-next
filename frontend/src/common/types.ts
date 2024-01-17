@@ -42,7 +42,7 @@ export type Response<T> = {
   data: T | null | undefined;
   message: string;
   status: number;
-  error: any;
+  error: string | null | "";
 };
 
 export type SignUpReq = {

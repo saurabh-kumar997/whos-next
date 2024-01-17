@@ -133,6 +133,7 @@ export interface GroupState {
   showAddTask: boolean;
   message: string;
   isError: boolean;
+  logOut: boolean;
   openSnackBar: boolean;
   activity: Activity[] | [] | null | undefined;
 }
@@ -152,6 +153,7 @@ const initialState: GroupState = {
   showAddTask: false,
   openSnackBar: false,
   activity: [],
+  logOut: false,
 };
 
 export const groupSlice = createSlice({
@@ -190,6 +192,9 @@ export const groupSlice = createSlice({
     setOpenSnackBar: (state, action: PayloadAction<boolean>) => {
       state.openSnackBar = action.payload;
     },
+    setLogOut: (state) => {
+      state.logOut = true;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchAllGroups.fulfilled, (state, action) => {
@@ -200,6 +205,10 @@ export const groupSlice = createSlice({
     }),
       builder.addCase(fetchAllGroups.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(fetchAllGroups.rejected, (state, action) => {
         state.loading = false;
@@ -221,6 +230,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(createGroup.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(createGroup.rejected, (state, action) => {
         state.loading = false;
@@ -238,6 +251,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(deleteGroup.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(deleteGroup.rejected, (state, action) => {
         state.loading = false;
@@ -262,6 +279,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(updateGroup.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(updateGroup.rejected, (state, action) => {
         state.loading = false;
@@ -287,6 +308,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(addMember.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(addMember.rejected, (state, action) => {
         state.loading = false;
@@ -310,6 +335,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(removeMember.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(removeMember.rejected, (state, action) => {
         state.loading = false;
@@ -333,6 +362,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(addTask.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(addTask.rejected, (state, action) => {
         state.loading = false;
@@ -357,6 +390,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(removeTask.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(removeTask.rejected, (state, action) => {
         state.loading = false;
@@ -380,6 +417,10 @@ export const groupSlice = createSlice({
       }),
       builder.addCase(markTaskAsDone.pending, (state) => {
         state.loading = true;
+        state.message = "";
+        state.isError = false;
+        state.error = "";
+        state.logOut = false;
       }),
       builder.addCase(markTaskAsDone.rejected, (state, action) => {
         state.loading = false;
@@ -398,6 +439,7 @@ export const {
   setShowActivity,
   setShowAddTask,
   setOpenSnackBar,
+  setLogOut,
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

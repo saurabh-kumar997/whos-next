@@ -8,23 +8,26 @@ import CloseIcon from "@mui/icons-material/Close";
 interface CustomeDialogProps {
   title: string;
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: ReactElement;
+  showCloseIcon?: boolean;
 }
 export default function CustomeDialog(props: CustomeDialogProps) {
-  const { title, open, onClose, children } = props;
+  const { title, open, onClose, children, showCloseIcon = true } = props;
 
   return (
     <>
-      <Dialog fullWidth maxWidth={"lg"} open={open} onClose={onClose}>
+      <Dialog fullWidth maxWidth={"lg"} open={open}>
         <DialogTitle>
           <Stack direction="row" justifyContent="space-between">
             <h4>{title}</h4>
-            <Tooltip title="Close">
-              <IconButton onClick={onClose} color="error" size="large">
-                <CloseIcon />
-              </IconButton>
-            </Tooltip>
+            {showCloseIcon && (
+              <Tooltip title="Close">
+                <IconButton onClick={onClose} color="error" size="large">
+                  <CloseIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
         </DialogTitle>
         <DialogContent dividers>{children}</DialogContent>

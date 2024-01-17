@@ -13,7 +13,7 @@ export interface IUserApiClient {
   signUp(body: SignUpReq): Promise<Response<User> | undefined>;
   signIn(body: SignInReq): Promise<Response<SingInResp> | undefined>;
   refreshToken(body: RefTokenReq): Promise<Response<RefTokenResp> | undefined>;
-  signOut(): Promise<Response<any> | undefined>;
+  signOut(): Promise<Response<null> | undefined>;
 }
 
 export class UserApiClient implements IUserApiClient {
@@ -78,7 +78,7 @@ export default class UserService {
   async signIn(body: SignInReq): Promise<Response<SingInResp> | undefined> {
     return this.userApiClient.signIn(body);
   }
-  async signOut(): Promise<Response<any> | undefined> {
+  async signOut(): Promise<Response<null> | undefined> {
     return this.userApiClient.signOut();
   }
   async refreshToken(

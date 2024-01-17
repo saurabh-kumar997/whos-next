@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import customAccordionReducer from "./CustomAccordionSlice";
 import userAuthReducer from "./authStore";
 import groupReducer from "./groupSlice";
 

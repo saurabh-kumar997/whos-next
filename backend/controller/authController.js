@@ -39,11 +39,11 @@ const signInRoute = async (req, res, next) => {
 
         const body = { id: user._id, email: user.email };
         const token = jwt.sign({ user: body }, "TOP_SECRET", {
-          expiresIn: "10m",
+          expiresIn: "1d",
         });
 
         const refreshToken = jwt.sign({ user: body }, "REFRESH_TOP_SECRET", {
-          expiresIn: "1h",
+          expiresIn: "30d",
         });
 
         const userToken = await UserToken.findOne({ userId: user._id });

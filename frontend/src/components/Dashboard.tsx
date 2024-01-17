@@ -1,22 +1,17 @@
 import CustomAccordion from "./Accordion";
 import { Button, Grid } from "@mui/material";
 import { useEffect } from "react";
-import CustomeDialog from "./Dialog";
 import GroupDetail from "./GroupDetail";
 import CreateGroup from "./CreateGroup";
 import { Group } from "../common/types";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
-import {
-  fetchAllGroups,
-  setGroupDetailFlag,
-  setCreateGroupFlag,
-  setShowActivity,
-} from "../store/groupSlice";
+import { fetchAllGroups, setCreateGroupFlag } from "../store/groupSlice";
 import Loader from "./Loader";
 import CustomSnackbars from "./SnackBar";
 import TimeLine from "./TimeLine";
 import NoDataFound from "./NoDataFound";
+import LogOutDialog from "./LogOutDialog";
 
 function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,8 +19,7 @@ function Dashboard() {
     dispatch(fetchAllGroups());
   }, []);
 
-  const { groups, groupDetailFlag, createGroupFlag, showActivity } =
-    useSelector((state: RootState) => state.group);
+  const { groups } = useSelector((state: RootState) => state.group);
 
   return (
     <>
@@ -50,27 +44,10 @@ function Dashboard() {
           )}
         </Grid>
       </Grid>
-      <CustomeDialog
-        title="Group Details"
-        onClose={() => dispatch(setGroupDetailFlag())}
-        open={groupDetailFlag}
-      >
-        <GroupDetail />
-      </CustomeDialog>
-      <CustomeDialog
-        title="Create Group"
-        onClose={() => dispatch(setCreateGroupFlag())}
-        open={createGroupFlag}
-      >
-        <CreateGroup />
-      </CustomeDialog>
-      <CustomeDialog
-        title="Timeline"
-        onClose={() => dispatch(setShowActivity(""))}
-        open={showActivity}
-      >
-        <TimeLine />
-      </CustomeDialog>
+      <GroupDetail />
+      <CreateGroup />
+      <TimeLine />
+      <LogOutDialog />
     </>
   );
 }

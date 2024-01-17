@@ -40,29 +40,28 @@ const refreshTokenRoute = async (req, res, next) => {
 
 const deleterefreshTokenRoute = async (req, res, next) => {
   const refToken = req.headers["x-refresh"];
-  jwt.verify(refToken, "REFRESH_TOP_SECRET", async (err, tokenDetails) => {
-    const response = new ResponseModel();
-    response.message = "User Logged Out Successfully!";
-    const user = tokenDetails?.user;
-    console.log("REFRESH: ", user);
-    try {
-      if (err || !user) {
-        response.status = 400;
-        response.message = "Invalid Refresh Token";
-        return res.status(response.status).json(response);
-      }
-      const userToken = await UserToken.findOne({ userId: user.id });
-
-      if (!userToken) {
-        return res.status(response.status).json(response);
-      }
-
-      await userToken.deleteOne();
+  var decodedPayload = jwt.decode(refToken, { json: true });
+  const response = new ResponseModel();
+  response.message = "User Logged Out Successfully!";
+  const user = decodedPayload?.user;
+  console.log("REFRESH: ", user);
+  try {
+    if (!user) {
+      response.status = 400;
+      response.message = "Session Expired";
       return res.status(response.status).json(response);
-    } catch (error) {
-      next(error);
     }
-  });
+    const userToken = await UserToken.findOne({ userId: user.id });
+
+    if (!userToken) {
+      return res.status(response.status).json(response);
+    }
+
+    await userToken.deleteOne();
+    return res.status(response.status).json(response);
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
